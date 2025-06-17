@@ -1,183 +1,97 @@
-# app.py
-import chainlit as cl
-from dotenv import load_dotenv
-from api_client import get_rag_response
+"""
+Chainlit application for Gunadarma University RAG chatbot.
+
+This module provides a conversational interface for students to get information
+about Gunadarma University including academic information, administration procedures,
+and campus facilities.
+"""
+
 import random
 from collections import defaultdict
+from typing import List, Dict
 
-# Muat environment variables dari file .env di awal
+import chainlit as cl
+from dotenv import load_dotenv
+
+from api_client import RAGApiClient
+from utils.cache import format_response_sources
+
+# Load environment variables at startup
 load_dotenv()
 
-# --- KUMPULAN LENGKAP PERTANYAAN STARTER (FOKUS KAMPUS) ---
-# Daftar ini telah direvisi untuk hanya berisi pertanyaan seputar Universitas Gunadarma.
-ALL_STARTERS = [
-    # Kategori: Pendaftaran & Admisi
-    cl.Starter(
-        label="Prosedur pendaftaran",
-        message="Bagaimana prosedur pendaftaran mahasiswa baru di Universitas Gunadarma?",
-        icon="/public/write.svg",
-    ),
-    cl.Starter(
-        label="Biaya kuliah",
-        message="Berapa rincian biaya kuliah untuk fakultas Teknik Industri?",
-        icon="/public/write.svg",
-    ),
-    cl.Starter(
-        label="Jalur masuk",
-        message="Apa saja jalur masuk yang tersedia untuk calon mahasiswa baru?",
-        icon="/public/write.svg",
-    ),
-    cl.Starter(
-        label="Syarat pendaftaran",
-        message="Dokumen apa saja yang diperlukan untuk pendaftaran?",
-        icon="/public/write.svg",
-    ),
-    cl.Starter(
-        label="Jadwal pendaftaran",
-        message="Kapan jadwal pendaftaran mahasiswa baru dibuka dan ditutup?",
-        icon="/public/write.svg",
-    ),
-    cl.Starter(
-        label="Program beasiswa",
-        message="Apakah ada program beasiswa yang tersedia dan bagaimana cara mendaftarnya?",
-        icon="/public/write.svg",
-    ),
-    # Kategori: Informasi Akademik
-    cl.Starter(
-        label="Daftar fakultas",
-        message="Sebutkan semua fakultas yang ada di Universitas Gunadarma.",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Program studi FIKTI",
-        message="Apa saja program studi yang ada di Fakultas Ilmu Komputer & Teknologi Informasi?",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Kalender akademik",
-        message="Di mana saya bisa melihat kalender akademik untuk tahun ini?",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Cara mengisi KRS",
-        message="Bagaimana langkah-langkah untuk mengisi Kartu Rencana Studi (KRS)?",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Syarat mengambil skripsi",
-        message="Apa saja syarat untuk bisa mengambil mata kuliah skripsi?",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Prosedur cuti akademik",
-        message="Bagaimana prosedur untuk mengajukan cuti akademik?",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Akreditasi universitas",
-        message="Apa status akreditasi Universitas Gunadarma saat ini?",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Program pascasarjana",
-        message="Program pascasarjana apa saja yang tersedia?",
-        icon="/public/learn.svg",
-    ),
-    cl.Starter(
-        label="Cara melihat IPK",
-        message="Bagaimana cara melihat Indeks Prestasi Kumulatif (IPK) di Studentsite?",
-        icon="/public/learn.svg",
-    ),
-    # Kategori: BAAK & Administrasi
-    cl.Starter(
-        label="Kontak BAAK",
-        message="Bagaimana cara menghubungi BAAK Universitas Gunadarma?",
-        icon="/public/idea.svg",
-    ),
-    cl.Starter(
-        label="Lokasi kantor BAAK",
-        message="Di mana lokasi kantor BAAK di kampus D?",
-        icon="/public/idea.svg",
-    ),
-    cl.Starter(
-        label="Prosedur legalisir ijazah",
-        message="Bagaimana prosedur untuk legalisir ijazah?",
-        icon="/public/idea.svg",
-    ),
-    cl.Starter(
-        label="Mengurus KTM yang hilang",
-        message="Apa yang harus saya lakukan jika Kartu Tanda Mahasiswa (KTM) saya hilang?",
-        icon="/public/idea.svg",
-    ),
-    cl.Starter(
-        label="Jadwal pembayaran",
-        message="Kapan batas akhir pembayaran Uang Kuliah untuk semester depan?",
-        icon="/public/idea.svg",
-    ),
-    cl.Starter(
-        label="Mendapatkan transkrip nilai",
-        message="Bagaimana cara mendapatkan transkrip nilai resmi?",
-        icon="/public/idea.svg",
-    ),
-    # Kategori: Fasilitas & Kehidupan Kampus
-    cl.Starter(
-        label="Lokasi perpustakaan",
-        message="Di mana lokasi perpustakaan pusat Universitas Gunadarma?",
-        icon="/public/question.svg",
-    ),
-    cl.Starter(
-        label="Unit Kegiatan Mahasiswa (UKM)",
-        message="Apa saja Unit Kegiatan Mahasiswa (UKM) yang populer?",
-        icon="/public/question.svg",
-    ),
-    cl.Starter(
-        label="Fasilitas olahraga",
-        message="Fasilitas olahraga apa saja yang dimiliki Gunadarma?",
-        icon="/public/question.svg",
-    ),
-    cl.Starter(
-        label="Lokasi kampus J1",
-        message="Di mana alamat lengkap kampus J1 Kalimalang?",
-        icon="/public/question.svg",
-    ),
-    cl.Starter(
-        label="Akses Wi-Fi kampus",
-        message="Bagaimana cara mengakses jaringan Wi-Fi di area kampus?",
-        icon="/public/question.svg",
-    ),
-    cl.Starter(
-        label="Fasilitas poliklinik",
-        message="Apakah ada fasilitas kesehatan atau poliklinik untuk mahasiswa?",
-        icon="/public/question.svg",
-    ),
-    cl.Starter(
-        label="Sejarah Gunadarma",
-        message="Ceritakan secara singkat tentang sejarah berdirinya Universitas Gunadarma.",
-        icon="/public/question.svg",
-    ),
-]
+# Initialize API client
+api_client = RAGApiClient()
 
-# --- LOGIKA UNTUK MENGELOMPOKKAN STARTER ---
-STARTERS_BY_ICON = defaultdict(list)
-for starter in ALL_STARTERS:
-    STARTERS_BY_ICON[starter.icon].append(starter)
+# --- STARTER QUESTIONS CONFIGURATION ---
+from config.starter_questions import (
+    get_all_starter_questions,
+    group_starters_by_icon,
+    select_random_starters_per_category,
+)
+
+
+class ChatbotResponseHandler:
+    """Handles chatbot responses and formatting."""
+
+    DEFAULT_ERROR_MESSAGE = (
+        "Maaf, saya tidak dapat menemukan jawaban untuk pertanyaan Anda."
+    )
+
+    def __init__(self, api_client: RAGApiClient):
+        self.api_client = api_client
+
+    async def process_user_message(self, message_content: str) -> str:
+        """
+        Process user message and return formatted response.
+
+        Args:
+            message_content: User's message content
+
+        Returns:
+            Formatted response string
+        """
+        response = await self.api_client.get_rag_response(message_content)
+
+        if response.get("error"):
+            return response["message"]
+
+        return self._format_successful_response(response)
+
+    def _format_successful_response(self, response: dict) -> str:
+        """
+        Format successful API response with answer and sources.
+
+        Args:
+            response: API response dictionary
+
+        Returns:
+            Formatted response string
+        """
+        answer = response.get("answer", self.DEFAULT_ERROR_MESSAGE)
+        source_urls = response.get("source_urls", [])
+
+        if not source_urls:
+            return answer
+
+        sources_section = format_response_sources(source_urls)
+        return f"{answer}{sources_section}"
+
+
+# Initialize response handler
+response_handler = ChatbotResponseHandler(api_client)
 
 
 @cl.set_chat_profiles
-async def chat_profile():
+async def setup_chat_profile():
     """
-    Menggunakan ChatProfile untuk menampilkan pesan selamat datang, avatar,
-    dan starters secara bersamaan di layar awal.
+    Configure the chat profile with welcome message, avatar, and starter questions.
+
+    Returns:
+        List containing the configured chat profile
     """
-
-    # Memilih satu starter acak dari setiap grup
-    final_starters = []
-    for icon_group in STARTERS_BY_ICON.values():
-        if icon_group:
-            final_starters.append(random.choice(icon_group))
-
-    # Mengacak urutan tampilan starter agar tidak monoton
-    random.shuffle(final_starters)
+    all_starters = get_all_starter_questions()
+    grouped_starters = group_starters_by_icon(all_starters)
+    selected_starters = select_random_starters_per_category(grouped_starters)
 
     return [
         cl.ChatProfile(
@@ -188,43 +102,38 @@ async def chat_profile():
 &emsp; Siap membantu seputar info akademik Universitas Gunadarma. &emsp;
 """,
             icon="/public/favicon.png",
-            starters=final_starters,
+            starters=selected_starters,
         )
     ]
 
 
 @cl.on_message
-async def main(message: cl.Message):
+async def handle_user_message(message: cl.Message):
     """
-    Fungsi ini dipanggil setiap kali pengguna mengirim pesan.
-    """
-    final_answer = ""
+    Handle incoming user messages and provide responses.
 
+    Args:
+        message: User message from Chainlit
+    """
     async with cl.Step(name="Context", type="run") as step:
         step.input = message.content
 
-        response = await get_rag_response(message.content)
+        try:
+            response_text = await response_handler.process_user_message(message.content)
 
-        if response.get("error"):
-            final_answer = response["message"]
+            # Check if response indicates an error
+            if (
+                "Terjadi kesalahan" in response_text
+                or "Tidak dapat terhubung" in response_text
+            ):
+                step.is_error = True
+                step.output = response_text
+            else:
+                step.output = "Jawaban berhasil ditemukan."
+
+        except Exception as e:
+            response_text = f"Terjadi kesalahan yang tidak terduga: {str(e)}"
             step.is_error = True
-            step.output = final_answer
-        else:
-            answer = response.get(
-                "answer",
-                "Maaf, saya tidak dapat menemukan jawaban untuk pertanyaan Anda.",
-            )
-            source_urls = response.get("source_urls", [])
+            step.output = response_text
 
-            final_answer = answer
-
-            if source_urls:
-                unique_urls = sorted(list(set(source_urls)))
-                sources_markdown = "\n\n**Sumber:**\n"
-                for url in unique_urls:
-                    sources_markdown += f"- <{url}>\n"
-                final_answer += sources_markdown
-
-            step.output = "Jawaban berhasil ditemukan."
-
-    await cl.Message(content=final_answer, author="Assistant").send()
+    await cl.Message(content=response_text, author="Assistant").send()
