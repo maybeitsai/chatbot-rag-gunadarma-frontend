@@ -1,0 +1,4 @@
+*.pyc
+/.chainlit/translations
+/.files
+.env
