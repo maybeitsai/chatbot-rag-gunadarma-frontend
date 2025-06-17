@@ -1,0 +1,22 @@
+<svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24"
+    fill="none">
+    <defs>
+        <linearGradient id="yellow-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <path 
+        d="M12 2C8.68629 2 6 4.68629 6 8C6 10.2051 7.1433 12.1287 8.87974 13.2559C9.0205 13.3518 9.09091 13.5134 9.06833 13.6757L8.5 18H15.5L14.9317 13.6757C14.9091 13.5134 14.9795 13.3518 15.1203 13.2559C16.8567 12.1287 18 10.2051 18 8C18 4.68629 15.3137 2 12 2Z" 
+        fill="url(#yellow-gradient)"/>
+    <path 
+        d="M10 18V20C10 20.5523 10.4477 21 11 21H13C13.5523 21 14 20.5523 14 20V18" 
+        fill="#E5E7EB" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="12" y1="2" x2="12" y2="1" stroke="#FBBF24" stroke-width="2" stroke-linecap="round"/>
+    <line x1="5.63604" y1="5.63604" x2="4.92893" y2="4.92893" stroke="#FBBF24" stroke-width="2" stroke-linecap="round"/>
+    <line x1="18.364" y1="5.63604" x2="19.0711" y2="4.92893" stroke="#FBBF24" stroke-width="2" stroke-linecap="round"/>
+</svg>

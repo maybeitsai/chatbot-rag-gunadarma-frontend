@@ -1,0 +1,31 @@
+<svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24"
+    fill="none">
+    <defs>
+        <linearGradient id="green-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" style="stop-color:#14B8A6; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#22C55E; stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <!-- Speech Bubble Background -->
+    <path 
+        d="M18 4H6C4.89543 4 4 4.89543 4 6V14C4 15.1046 4.89543 16 6 16H9L12 20L15 16H18C19.1046 16 20 15.1046 20 14V6C20 4.89543 19.1046 4 18 4Z" 
+        fill="#F0FDFA" 
+        stroke="#5EEAD4" 
+        stroke-width="1.5"
+    />
+    <!-- Question Mark with Gradient -->
+    <path 
+        d="M12 13.5C12.8284 13.5 13.5 12.8284 13.5 12C13.5 11.1716 12.8284 10.5 12 10.5C11.1716 10.5 10.5 11.1716 10.5 12C10.5 12.8284 11.1716 13.5 12 13.5Z" 
+        fill="url(#green-gradient)"
+    />
+    <path 
+        d="M12 10C12.8284 10 13.5 9.32843 13.5 8.5C13.5 7.67157 12.8284 7 12 7C10.68 7 9.5 7.9 9.5 9.5" 
+        stroke="url(#green-gradient)" 
+        stroke-width="2" 
+        stroke-linecap="round"
+    />
+</svg>

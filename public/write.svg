@@ -1,0 +1,21 @@
+<svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24"
+    fill="none">
+    <defs>
+        <linearGradient id="blue-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <path 
+        d="M8.5 2H15.5C16.3284 2 17 2.67157 17 3.5V5H7V3.5C7 2.67157 7.67157 2 8.5 2Z" 
+        stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path 
+        d="M18 5.625H6C5.44772 5.625 5 6.07272 5 6.625V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V6.625C19 6.07272 18.5523 5.625 18 5.625Z" 
+        fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5"/>
+    <circle cx="12" cy="13" r="4" fill="url(#blue-gradient)"/>
+    <path d="M10.5 13L11.5 14L13.5 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
