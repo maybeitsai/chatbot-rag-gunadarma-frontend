@@ -1,0 +1,449 @@
+:root {
+  --gunadarma-primary: #68439a;
+  --gunadarma-primary-dark: #4a2e6b;
+  --gunadarma-primary-light: #e8e0f0;
+  --gunadarma-primary-hover: #7b53b3;
+}
+
+/* Button styles - HANYA untuk settings dan controls, BUKAN send button */
+.MuiButton-contained:not([aria-label*="send"]):not([aria-label*="Send"]),
+.MuiButton-containedPrimary:not([aria-label*="send"]):not([aria-label*="Send"]),
+.MuiFab-primary:not([aria-label*="send"]):not([aria-label*="Send"]) {
+  background-color: var(--gunadarma-primary) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+.MuiButton-contained:not([aria-label*="send"]):not([aria-label*="Send"]):hover,
+.MuiButton-containedPrimary:not([aria-label*="send"]):not(
+    [aria-label*="Send"]
+  ):hover,
+.MuiFab-primary:not([aria-label*="send"]):not([aria-label*="Send"]):hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+  border-color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Link styles */
+a,
+.MuiLink-root {
+  color: var(--gunadarma-primary) !important;
+}
+
+a:hover,
+.MuiLink-root:hover {
+  color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Settings panel switches - Styling yang lebih baik untuk ON/OFF */
+
+/* Switch dalam keadaan AKTIF (ON/CHECKED) */
+button[data-state="checked"] {
+  background-color: var(
+    --gunadarma-primary-light
+  ) !important; /* Background track lebih terang */
+  border: 1px solid var(--gunadarma-primary) !important;
+}
+
+/* Switch dalam keadaan TIDAK AKTIF (OFF/UNCHECKED) */
+button[data-state="unchecked"] {
+  background-color: var(
+    --gunadarma-primary-dark
+  ) !important; /* Background track gelap */
+  border: 1px solid var(--gunadarma-primary-dark) !important;
+  opacity: 0.3 !important;
+}
+
+/* Switch thumb styling - common properties */
+button[data-state="checked"] span,
+button[data-state="unchecked"] span {
+  background-color: white !important; /* Bulat putih yang sama */
+  border: 2px solid #d0d0d0 !important; /* Border abu-abu soft */
+}
+
+button[data-state="checked"] span {
+  box-shadow: 0 2px 4px rgba(104, 67, 154, 0.3) !important; /* Shadow dengan warna tema */
+}
+
+button[data-state="unchecked"] span {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important; /* Shadow subtle */
+}
+
+/* Material-UI switch styling */
+.MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-thumb,
+.MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-track {
+  background-color: var(--gunadarma-primary) !important;
+}
+
+/* Specific switch controls - unchecked state */
+#detailed_response:not(.Mui-checked) .MuiSwitch-thumb,
+#show_sources:not(.Mui-checked) .MuiSwitch-thumb {
+  background-color: #ffffff !important;
+  border: 1px solid #cccccc !important;
+}
+
+#detailed_response:not(.Mui-checked) .MuiSwitch-track,
+#show_sources:not(.Mui-checked) .MuiSwitch-track {
+  background-color: #cccccc !important;
+  opacity: 0.6 !important;
+}
+
+/* HANYA TOMBOL SEND PESAN - ID: chat-submit */
+
+/* Tombol send enabled */
+#chat-submit:not([disabled]) {
+  background-color: var(--gunadarma-primary) !important;
+  color: white !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Tombol send hover */
+#chat-submit:not([disabled]):hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+  border-color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Tombol send disabled */
+#chat-submit[disabled],
+#chat-submit.Mui-disabled {
+  background-color: var(--gunadarma-primary) !important;
+  color: white !important;
+  border-color: var(--gunadarma-primary) !important;
+  opacity: 0.5 !important;
+}
+
+/* TOMBOL SEARCH OPTIONS - ID: detailed_response, confirm, show_sources */
+
+/* Tombol search options enabled */
+#detailed_response:not([disabled]),
+#confirm:not([disabled]),
+#show_sources:not([disabled]) {
+  background-color: var(--gunadarma-primary) !important;
+  color: white !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Tombol search options hover */
+#detailed_response:not([disabled]):hover,
+#confirm:not([disabled]):hover,
+#show_sources:not([disabled]):hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+  border-color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Tombol search options disabled */
+#detailed_response[disabled],
+#show_sources[disabled],
+#detailed_response.Mui-disabled,
+#confirm.Mui-disabled,
+#show_sources.Mui-disabled {
+  background-color: var(--gunadarma-primary) !important;
+  color: white !important;
+  border-color: var(--gunadarma-primary) !important;
+  opacity: 0.5 !important;
+}
+
+/* Step indicator colors */
+.step-indicator,
+.MuiStepIcon-root.MuiStepIcon-active {
+  color: var(--gunadarma-primary) !important;
+}
+
+/* Progress indicators */
+.MuiCircularProgress-colorPrimary {
+  color: var(--gunadarma-primary) !important;
+}
+
+/* Chat profile selection */
+.chat-profile-button.selected {
+  background-color: var(--gunadarma-primary-light) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Starter buttons */
+.starter-button:hover {
+  background-color: var(--gunadarma-primary-light) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* File upload area */
+.file-upload-area:hover {
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Custom scrollbar for settings panel */
+.settings-panel::-webkit-scrollbar-thumb {
+  background-color: var(--gunadarma-primary) !important;
+}
+
+/* Message reaction buttons */
+.message-reaction:hover {
+  background-color: var(--gunadarma-primary-light) !important;
+}
+
+/* Tab indicators */
+.MuiTabs-indicator {
+  background-color: var(--gunadarma-primary) !important;
+}
+
+.MuiTab-root.Mui-selected {
+  color: var(--gunadarma-primary) !important;
+}
+
+/* Chainlit specific elements */
+.cl-button-primary {
+  background-color: var(--gunadarma-primary) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+.cl-button-primary:hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+  border-color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Settings widget focus states */
+.MuiFormControl-root .MuiInputBase-root.Mui-focused fieldset {
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Radio button selection */
+.MuiRadio-colorPrimary.Mui-checked {
+  color: var(--gunadarma-primary) !important;
+}
+
+/* Checkbox selection */
+.MuiCheckbox-colorPrimary.Mui-checked {
+  color: var(--gunadarma-primary) !important;
+}
+
+/* Typography links in messages */
+.message-content a {
+  color: var(--gunadarma-primary) !important;
+  text-decoration: underline;
+}
+
+.message-content a:hover {
+  color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Fix focus ring untuk dropdown button search_mode */
+button[id="search_mode"]:focus,
+button[role="combobox"]:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Custom focus ring menggunakan box-shadow */
+button[id="search_mode"]:focus-visible,
+button[role="combobox"]:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Override default focus ring colors dengan CSS variables */
+button[id="search_mode"] {
+  --ring-color: var(--gunadarma-primary) !important;
+}
+
+/* Untuk semua element dengan focus ring, gunakan warna tema */
+*:focus-visible {
+  --ring-color: var(--gunadarma-primary) !important;
+}
+
+/* Fix focus ring untuk tombol close/exit */
+button.absolute.right-4.top-4:focus,
+button.absolute.right-4.top-4:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+}
+
+/* Override untuk semua tombol dengan focus ring */
+button:focus-visible,
+button:focus {
+  --ring-color: var(--gunadarma-primary) !important;
+}
+
+/* Styling khusus untuk tombol close dengan SVG */
+button[class*="absolute"][class*="right-4"][class*="top-4"]:focus-visible {
+  box-shadow: 0 0 0 2px var(--gunadarma-primary),
+    0 0 0 4px rgba(104, 67, 154, 0.1) !important;
+  outline: none !important;
+}
+
+/* Stop button styling - tombol yang muncul saat chat submit diklik */
+#stop-button {
+  background-color: var(--gunadarma-primary) !important;
+  color: white !important;
+  border: 1px solid var(--gunadarma-primary) !important;
+}
+
+#stop-button:hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+  border-color: var(--gunadarma-primary-hover) !important;
+}
+
+#stop-button:focus,
+#stop-button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Override bg-primary class untuk stop button */
+#stop-button.bg-primary {
+  background-color: var(--gunadarma-primary) !important;
+}
+
+#stop-button.bg-primary:hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+}
+
+/* MEMPERBESAR FAVICON/LOGO PADA TAMPILAN UTAMA */
+
+/* Target SPESIFIK hanya untuk favicon di welcome screen dengan class h-16 w-16 */
+img.h-16.w-16.rounded-full[src*="favicon.png"],
+img.h-16.w-16.rounded-full[src*="/public/favicon.png"] {
+  width: 96px !important;
+  height: 96px !important;
+}
+
+/* Target untuk container dengan flex dan gap-2 mb-2 items-center (welcome screen) */
+.flex.flex-col.gap-2.mb-2.items-center img[src*="favicon.png"],
+.flex.flex-col.gap-2.mb-2.items-center img[src*="/public/favicon.png"] {
+  width: 96px !important;
+  height: 96px !important;
+}
+
+/* Responsive: sedikit lebih kecil di mobile - hanya untuk favicon */
+@media (max-width: 768px) {
+  img.h-16.w-16.rounded-full[src*="favicon.png"],
+  img.h-16.w-16.rounded-full[src*="/public/favicon.png"],
+  .flex.flex-col.gap-2.mb-2.items-center img[src*="favicon.png"],
+  .flex.flex-col.gap-2.mb-2.items-center img[src*="/public/favicon.png"] {
+    width: 80px !important;
+    height: 80px !important;
+  }
+}
+
+/* MEMUSATKAN TEKS PADA WELCOME SCREEN - HANYA UNTUK CONTAINER DENGAN FAVICON */
+
+/* Target SANGAT SPESIFIK untuk heading "Chatbot Universitas Gunadarma" dalam welcome screen */
+.flex.flex-col.gap-2.mb-2.items-center
+  .prose
+  h2.scroll-m-20.border-b.pb-2.text-3xl.font-semibold.tracking-tight {
+  text-align: center !important;
+  display: inline-block !important;
+  border-bottom-width: 1px !important;
+}
+
+/* Target SANGAT SPESIFIK untuk deskripsi dalam welcome screen */
+.flex.flex-col.gap-2.mb-2.items-center .prose div.leading-7[role="article"] {
+  text-align: center !important;
+}
+
+/* Target untuk container prose HANYA dalam welcome screen dengan favicon */
+.flex.flex-col.gap-2.mb-2.items-center .prose.lg\:prose-xl {
+  text-align: center !important;
+  max-width: none !important;
+}
+
+/* TARGET SPESIFIK untuk heading "Tentang Chatbot UG" dari chainlit.md */
+
+/* Target h2 pertama dalam markdown content - kemungkinan besar "Tentang Chatbot UG" */
+.prose
+  h2.scroll-m-20.border-b.pb-2.text-3xl.font-semibold.tracking-tight.mt-8.first\:mt-0:first-of-type {
+  text-align: center !important;
+  display: inline-block !important;
+  border-bottom-width: 1px !important;
+}
+
+/* Alternatif: Target h2 dalam markdown container */
+.markdown-content h2:first-of-type,
+.cl-markdown h2:first-of-type {
+  text-align: center !important;
+  display: inline-block !important;
+  border-bottom-width: 1px !important;
+}
+
+/* Class khusus untuk heading tertentu jika diperlukan */
+.center-heading {
+  text-align: center !important;
+  display: inline-block !important;
+  border-bottom-width: 1px !important;
+}
+
+/* STYLING UNTUK NEW CHAT BUTTON - mengatasi focus ring pink */
+#new-chat-button:focus,
+#new-chat-button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Override ring classes untuk new chat button */
+#new-chat-button.focus-visible\:ring-ring {
+  --ring-color: var(--gunadarma-primary) !important;
+}
+
+/* Pastikan hover state tetap konsisten */
+#new-chat-button:hover {
+  background-color: var(--gunadarma-primary-light) !important;
+  color: var(--gunadarma-primary) !important;
+}
+
+/* TARGET SPESIFIK untuk heading "Settings panel" */
+
+/* Target berdasarkan ID radix yang spesifik */
+h2[id^="radix-"]:r1,
+h2#radix-\:r1\: {
+  text-align: center !important;
+}
+
+/* Target berdasarkan kombinasi class yang unik untuk settings panel */
+h2.text-lg.font-semibold.leading-none.tracking-tight {
+  text-align: center !important;
+}
+
+/* Jika ada kontainer settings panel, target lebih spesifik */
+[data-testid*="settings"] h2,
+[role="dialog"] h2.text-lg.font-semibold,
+.settings-panel h2,
+div[class*="settings"] h2.text-lg.font-semibold.leading-none.tracking-tight {
+  text-align: center !important;
+}
+
+/* MENGUBAH WARNA FOCUS RING/TEPI TOMBOL DARI PINK KE TEMA */
+
+/* Target semua button dengan pattern class umum - HANYA focus ring */
+button.inline-flex.items-center.justify-center:focus,
+button.inline-flex.items-center.justify-center:focus-visible,
+button[class*="inline-flex"][class*="items-center"]:focus,
+button[class*="inline-flex"][class*="items-center"]:focus-visible,
+button[class*="rounded-md"]:focus,
+button[class*="rounded-md"]:focus-visible,
+button[class*="transition-colors"]:focus,
+button[class*="transition-colors"]:focus-visible,
+button[class*="gap-2"]:focus,
+button[class*="gap-2"]:focus-visible,
+button[class*="whitespace-nowrap"]:focus,
+button[class*="whitespace-nowrap"]:focus-visible,
+button[class*="h-9"]:focus,
+button[class*="h-9"]:focus-visible,
+button[class*="w-9"]:focus,
+button[class*="w-9"]:focus-visible,
+button.focus-visible\:ring-2:focus-visible,
+button.focus-visible\:ring:focus-visible,
+button[class*="focus-visible:ring"]:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+}
+
+/* Ring color variables untuk pattern buttons */
+button.focus-visible\:ring-2:focus-visible,
+button.focus-visible\:ring:focus-visible,
+button[class*="focus-visible:ring"]:focus-visible,
+button[class*="inline-flex"],
+button[class*="rounded-md"],
+button[class*="transition-colors"] {
+  --ring-color: var(--gunadarma-primary) !important;
+}

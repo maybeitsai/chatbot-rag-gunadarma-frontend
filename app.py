@@ -1,139 +1,257 @@
 """
-Chainlit application for Gunadarma University RAG chatbot.
+Gunadarma University RAG Chatbot - Clean Architecture Implementation
 
-This module provides a conversational interface for students to get information
-about Gunadarma University including academic information, administration procedures,
-and campus facilities.
+This is the main entry point for the Chainlit chatbot application using clean architecture.
+All business logic is properly separated into layers with dependency injection.
 """
 
-import random
-from collections import defaultdict
-from typing import List, Dict
+import os
+import logging
+from typing import Optional
 
 import chainlit as cl
 from dotenv import load_dotenv
+from chainlit.input_widget import Select, Switch
 
-from api_client import RAGApiClient
-from utils.cache import format_response_sources
+from src import app
+from src.domain.enums import SearchStrategy
+
 
 # Load environment variables at startup
 load_dotenv()
 
-# Initialize API client
-api_client = RAGApiClient()
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# --- STARTER QUESTIONS CONFIGURATION ---
-from config.starter_questions import (
-    get_all_starter_questions,
-    group_starters_by_icon,
-    select_random_starters_per_category,
-)
-
-
-class ChatbotResponseHandler:
-    """Handles chatbot responses and formatting."""
-
-    DEFAULT_ERROR_MESSAGE = (
-        "Maaf, saya tidak dapat menemukan jawaban untuk pertanyaan Anda."
-    )
-
-    def __init__(self, api_client: RAGApiClient):
-        self.api_client = api_client
-
-    async def process_user_message(self, message_content: str) -> str:
-        """
-        Process user message and return formatted response.
-
-        Args:
-            message_content: User's message content
-
-        Returns:
-            Formatted response string
-        """
-        response = await self.api_client.get_rag_response(message_content)
-
-        if response.get("error"):
-            return response["message"]
-
-        return self._format_successful_response(response)
-
-    def _format_successful_response(self, response: dict) -> str:
-        """
-        Format successful API response with answer and sources.
-
-        Args:
-            response: API response dictionary
-
-        Returns:
-            Formatted response string
-        """
-        answer = response.get("answer", self.DEFAULT_ERROR_MESSAGE)
-        source_urls = response.get("source_urls", [])
-
-        if not source_urls:
-            return answer
-
-        sources_section = format_response_sources(source_urls)
-        return f"{answer}{sources_section}"
-
-
-# Initialize response handler
-response_handler = ChatbotResponseHandler(api_client)
 
 
 @cl.set_chat_profiles
 async def setup_chat_profile():
-    """
-    Configure the chat profile with welcome message, avatar, and starter questions.
-
-    Returns:
-        List containing the configured chat profile
-    """
-    all_starters = get_all_starter_questions()
-    grouped_starters = group_starters_by_icon(all_starters)
-    selected_starters = select_random_starters_per_category(grouped_starters)
-
-    return [
-        cl.ChatProfile(
-            name="Chatbot UG",
-            markdown_description="""
-## &emsp; **Chatbot Universitas Gunadarma** &emsp;
-
-&emsp; Siap membantu seputar info akademik Universitas Gunadarma. &emsp;
-""",
-            icon="/public/favicon.png",
-            starters=selected_starters,
+    """Configure the chat profile with welcome message, avatar, and starter questions."""
+    try:
+        chat_profile_config = app.get_chat_profile_config()
+        profile_data = chat_profile_config.create_chat_profile(app.is_hybrid_available())
+        
+        # Convert starter data to chainlit Starter objects
+        starters = []
+        for starter_data in profile_data['starters']:
+            starter = cl.Starter(
+                label=starter_data['label'],
+                message=starter_data['message'],
+                icon=starter_data['icon']
+            )
+            starters.append(starter)
+        
+        profile = cl.ChatProfile(
+            name=profile_data['name'],
+            markdown_description=profile_data['description'],
+            icon=profile_data['icon'],
+            starters=starters,
         )
-    ]
+        
+        return [profile]
+    except Exception as e:
+        logger.error(f"Error setting up chat profile: {e}")
+        # Return minimal profile on error
+        return [
+            cl.ChatProfile(
+                name="Chatbot UG",
+                markdown_description="**Chatbot Universitas Gunadarma** - Mode Darurat",
+                icon="/public/favicon.png",
+                starters=[],
+            )
+        ]
 
 
 @cl.on_message
 async def handle_user_message(message: cl.Message):
-    """
-    Handle incoming user messages and provide responses.
-
-    Args:
-        message: User message from Chainlit
-    """
-    async with cl.Step(name="Context", type="run") as step:
-        step.input = message.content
-
-        try:
-            response_text = await response_handler.process_user_message(message.content)
-
-            # Check if response indicates an error
-            if (
-                "Terjadi kesalahan" in response_text
-                or "Tidak dapat terhubung" in response_text
-            ):
+    """Handle incoming user messages through the chat controller."""
+    try:
+        chat_controller = app.get_chat_controller()
+        
+        # Get current search settings from user session
+        search_mode = cl.user_session.get("search_mode", SearchStrategy.HYBRID.value if app.is_hybrid_available() else SearchStrategy.SEMANTIC.value)
+        show_sources = cl.user_session.get("show_sources", True)
+        detailed_response = cl.user_session.get("detailed_response", False)
+        
+        # Map search mode to display name
+        mode_names = {
+            SearchStrategy.HYBRID.value: "Hybrid Search",
+            SearchStrategy.SEMANTIC.value: "Semantic Search", 
+            SearchStrategy.KEYWORD.value: "Keyword Search",
+            SearchStrategy.SMART.value: "Smart Search",
+            SearchStrategy.ACADEMIC.value: "Academic Search",
+            SearchStrategy.ADMINISTRATIVE.value: "Administrative Search", 
+            SearchStrategy.FACILITY.value: "Facility Search",
+            SearchStrategy.QUICK.value: "Quick Search"
+        }
+        
+        step_name = mode_names.get(search_mode, search_mode)
+        
+        async with cl.Step(name=step_name, type="run") as step:
+            step.input = message.content
+            
+            try:
+                # Process message through controller with selected search mode
+                response_text = await chat_controller.process_message(
+                    message.content, 
+                    search_strategy=search_mode,
+                    show_sources=show_sources,
+                    detailed_response=detailed_response
+                )
+                
+                # Check if response indicates an error
+                if "❌" in response_text or "Error" in response_text:
+                    step.is_error = True
+                    step.output = f"Terjadi kesalahan dalam pencarian dengan {step_name}"
+                else:
+                    step.output = f"Pencarian berhasil dengan {step_name}"
+                    
+            except Exception as e:
+                logger.error(f"Error in message handling: {e}")
+                response_text = f"❌ **Error:** Terjadi kesalahan yang tidak terduga: {str(e)}"
                 step.is_error = True
                 step.output = response_text
-            else:
-                step.output = "Jawaban berhasil ditemukan."
+        
+        await cl.Message(content=response_text, author="Assistant").send()
+        
+    except Exception as e:
+        logger.error(f"Critical error in message handling: {e}")
+        # Send error message to user
+        error_message = f"❌ **System Error:** Terjadi kesalahan sistem yang tidak terduga. Silakan coba lagi atau hubungi administrator."
+        await cl.Message(content=error_message, author="Assistant").send()
 
-        except Exception as e:
-            response_text = f"Terjadi kesalahan yang tidak terduga: {str(e)}"
-            step.is_error = True
-            step.output = response_text
 
-    await cl.Message(content=response_text, author="Assistant").send()
+@cl.on_chat_start
+async def on_chat_start():
+    """Initialize chat session and setup search mode settings."""
+    logger.info("New chat session started")
+    
+    # Setup search mode settings
+    await setup_search_settings()
+    
+    # Send welcome message if needed
+    if not app.is_hybrid_available():
+        warning_message = """
+⚠️ **Peringatan:** Sistem sedang berjalan dalam mode kompatibilitas. 
+Beberapa fitur mungkin tidak tersedia.
+
+Silakan lanjutkan dengan mengetikkan pertanyaan Anda.
+        """
+        await cl.Message(content=warning_message, author="System").send()
+
+
+async def setup_search_settings():
+    """Setup search mode settings for the chat."""
+    # Available search strategies based on the domain enum
+    search_options = []
+    search_values = []
+    
+    if app.is_hybrid_available():
+        search_options = [
+            "Hybrid Search",
+            "Semantic Search", 
+            "Keyword Search",
+            "Smart Search",
+            "Academic Search", 
+            "Administrative Search",
+            "Facility Search",
+            "Quick Search"
+        ]
+        search_values = [
+            SearchStrategy.HYBRID.value,
+            SearchStrategy.SEMANTIC.value,
+            SearchStrategy.KEYWORD.value, 
+            SearchStrategy.SMART.value,
+            SearchStrategy.ACADEMIC.value,
+            SearchStrategy.ADMINISTRATIVE.value,
+            SearchStrategy.FACILITY.value,
+            SearchStrategy.QUICK.value
+        ]
+        initial_index = 0  # Default to Hybrid
+    else:
+        search_options = [
+            "Semantic Search",
+            "Keyword Search", 
+            "Quick Search"
+        ]
+        search_values = [
+            SearchStrategy.SEMANTIC.value,
+            SearchStrategy.KEYWORD.value,
+            SearchStrategy.QUICK.value
+        ]
+        initial_index = 0  # Default to Semantic
+    
+    settings = await cl.ChatSettings(
+        [
+            Select(
+                id="search_mode",
+                label="🔍 Mode Pencarian",
+                values=search_options,
+                initial_index=initial_index,
+                description="Pilih mode pencarian yang sesuai dengan kebutuhan Anda"
+            ),
+            Switch(
+                id="show_sources", 
+                label="📚 Tampilkan Sumber",
+                initial=True,
+                description="Tampilkan sumber referensi dalam jawaban"
+            ),
+            Switch(
+                id="detailed_response",
+                label="📝 Jawaban Detail", 
+                initial=False,
+                description="Berikan jawaban yang lebih detail dan komprehensif"
+            )
+        ]
+    ).send()
+    
+    # Store initial settings in user session
+    cl.user_session.set("search_mode", search_values[initial_index])
+    cl.user_session.set("show_sources", True)
+    cl.user_session.set("detailed_response", False)
+
+
+@cl.on_settings_update
+async def on_settings_update(settings):
+    """Handle search settings updates."""
+    logger.info(f"Settings updated: {settings}")
+    
+    # Update user session with new settings
+    cl.user_session.set("search_mode", settings.get("search_mode", SearchStrategy.HYBRID.value))
+    cl.user_session.set("show_sources", settings.get("show_sources", True))
+    cl.user_session.set("detailed_response", settings.get("detailed_response", False))
+    
+    # Log the changes for debugging (no chat message sent)
+    search_mode = settings.get("search_mode", SearchStrategy.HYBRID.value)
+    mode_names = {
+        SearchStrategy.HYBRID.value: "Hybrid Search",
+        SearchStrategy.SEMANTIC.value: "Semantic Search", 
+        SearchStrategy.KEYWORD.value: "Keyword Search",
+        SearchStrategy.SMART.value: "Smart Search",
+        SearchStrategy.ACADEMIC.value: "Academic Search",
+        SearchStrategy.ADMINISTRATIVE.value: "Administrative Search", 
+        SearchStrategy.FACILITY.value: "Facility Search",
+        SearchStrategy.QUICK.value: "Quick Search"
+    }
+    
+    mode_name = mode_names.get(search_mode, search_mode)
+    show_sources = "enabled" if settings.get("show_sources", True) else "disabled"
+    detailed = "enabled" if settings.get("detailed_response", False) else "disabled"
+    
+    logger.info(f"Search mode updated to: {mode_name}, Show sources: {show_sources}, Detailed response: {detailed}")
+
+
+@cl.on_chat_end
+async def on_chat_end():
+    """Clean up when chat session ends."""
+    logger.info("Chat session ended")
+
+
+if __name__ == "__main__":
+    # This allows the app to be run directly, but usually chainlit handles execution
+    print("🚀 Gunadarma RAG Chatbot - Clean Architecture")
+    print("📁 Struktur: Domain → Application → Infrastructure → Presentation")
+    print("🔧 Untuk menjalankan: chainlit run app.py -w")
+    print("🌐 Mode:", "Hybrid Search" if app.is_hybrid_available() else "Legacy API")
