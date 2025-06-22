@@ -6,9 +6,11 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiohttp>=3.12.13",
+    "asyncio-throttle>=1.0.2",
     "black>=25.1.0",
     "chainlit>=2.5.5",
     "httpx>=0.28.1",
+    "pydantic>=2.11.7",
     "python-dotenv>=1.1.0",
     "requests>=2.32.4",
     "streamlit>=1.45.1",
