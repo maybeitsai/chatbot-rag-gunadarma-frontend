@@ -43,12 +43,6 @@ button[data-state="checked"] {
   border: 1px solid var(--gunadarma-primary) !important;
 }
 
-button[data-state="checked"] span {
-  background-color: white !important; /* Bulat putih yang menarik */
-  border: 2px solid #d0d0d0 !important; /* Border abu-abu soft */
-  box-shadow: 0 2px 4px rgba(104, 67, 154, 0.3) !important; /* Shadow dengan warna tema */
-}
-
 /* Switch dalam keadaan TIDAK AKTIF (OFF/UNCHECKED) */
 button[data-state="unchecked"] {
   background-color: var(
@@ -58,21 +52,28 @@ button[data-state="unchecked"] {
   opacity: 0.3 !important;
 }
 
+/* Switch thumb styling - common properties */
+button[data-state="checked"] span,
 button[data-state="unchecked"] span {
   background-color: white !important; /* Bulat putih yang sama */
   border: 2px solid #d0d0d0 !important; /* Border abu-abu soft */
+}
+
+button[data-state="checked"] span {
+  box-shadow: 0 2px 4px rgba(104, 67, 154, 0.3) !important; /* Shadow dengan warna tema */
+}
+
+button[data-state="unchecked"] span {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important; /* Shadow subtle */
 }
 
-/* Fallback untuk Material-UI switch jika masih digunakan */
-.MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-thumb {
-  background-color: var(--gunadarma-primary) !important;
-}
-
+/* Material-UI switch styling */
+.MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-thumb,
 .MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-track {
   background-color: var(--gunadarma-primary) !important;
 }
 
+/* Specific switch controls - unchecked state */
 #detailed_response:not(.Mui-checked) .MuiSwitch-thumb,
 #show_sources:not(.Mui-checked) .MuiSwitch-thumb {
   background-color: #ffffff !important;
@@ -409,4 +410,40 @@ h2.text-lg.font-semibold.leading-none.tracking-tight {
 .settings-panel h2,
 div[class*="settings"] h2.text-lg.font-semibold.leading-none.tracking-tight {
   text-align: center !important;
+}
+
+/* MENGUBAH WARNA FOCUS RING/TEPI TOMBOL DARI PINK KE TEMA */
+
+/* Target semua button dengan pattern class umum - HANYA focus ring */
+button.inline-flex.items-center.justify-center:focus,
+button.inline-flex.items-center.justify-center:focus-visible,
+button[class*="inline-flex"][class*="items-center"]:focus,
+button[class*="inline-flex"][class*="items-center"]:focus-visible,
+button[class*="rounded-md"]:focus,
+button[class*="rounded-md"]:focus-visible,
+button[class*="transition-colors"]:focus,
+button[class*="transition-colors"]:focus-visible,
+button[class*="gap-2"]:focus,
+button[class*="gap-2"]:focus-visible,
+button[class*="whitespace-nowrap"]:focus,
+button[class*="whitespace-nowrap"]:focus-visible,
+button[class*="h-9"]:focus,
+button[class*="h-9"]:focus-visible,
+button[class*="w-9"]:focus,
+button[class*="w-9"]:focus-visible,
+button.focus-visible\:ring-2:focus-visible,
+button.focus-visible\:ring:focus-visible,
+button[class*="focus-visible:ring"]:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+}
+
+/* Ring color variables untuk pattern buttons */
+button.focus-visible\:ring-2:focus-visible,
+button.focus-visible\:ring:focus-visible,
+button[class*="focus-visible:ring"]:focus-visible,
+button[class*="inline-flex"],
+button[class*="rounded-md"],
+button[class*="transition-colors"] {
+  --ring-color: var(--gunadarma-primary) !important;
 }
