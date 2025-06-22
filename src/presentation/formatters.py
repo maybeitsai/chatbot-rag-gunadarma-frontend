@@ -6,8 +6,7 @@ from ..domain import SearchResponse
 
 
 class ResponseFormatter(FormatterInterface):
-    """Formatter for search responses and UI elements."""
-    
+    """Formatter for search responses and UI elements."""    
     def __init__(self, show_debug_info: bool = False):
         self.show_debug_info = show_debug_info
     
@@ -18,12 +17,10 @@ class ResponseFormatter(FormatterInterface):
         
         formatted_text = response.answer
         
-        # Add sources if available
         if response.source_urls:
             sources_section = self._format_sources(response.source_urls)
             formatted_text += sources_section
         
-        # Add debug info if enabled
         if self.show_debug_info:
             debug_info = self._format_debug_info(response)
             formatted_text += debug_info

@@ -31,27 +31,21 @@ class ChatController:
         self, 
         message_content: str,
         search_strategy: str = None,
-        show_sources: bool = True,
-        detailed_response: bool = False
+        show_sources: bool = True,        detailed_response: bool = False
     ) -> str:
         """Process user message and return response."""
         try:
-            # Check for special commands
             if message_content.startswith("/"):
                 return await self.handle_special_commands(message_content)
             
-            # Set default search strategy if not provided
             if search_strategy is None:
                 search_strategy = SearchStrategy.HYBRID.value if self.hybrid_available else SearchStrategy.SEMANTIC.value
             
-            # Create search options
-            search_options = {
-                'strategy': search_strategy,
+            search_options = {                'strategy': search_strategy,
                 'show_sources': show_sources,
                 'detailed_response': detailed_response
             }
             
-            # Process regular message with options
             response_text = await self.chat_use_case.process_user_message(
                 message_content, 
                 search_options=search_options

@@ -16,18 +16,16 @@ class SearchService(SearchServiceInterface):
     """
     High-level search service with intelligent search strategy selection.
     
-    This service provides different search strategies optimized for various
-    types of queries and use cases.
+    This service provides different search strategies optimized for various    types of queries and use cases.
     """
     
     def __init__(self, api_config: Optional[ApiConfig] = None):
         """Initialize search service with API client."""
         self.client = RAGApiClient(api_config)
         
-        # Keywords for strategy detection
         self._strategy_keywords = {
             SearchStrategy.ACADEMIC: [
-                "mata kuliah", "sks", "kurikulum", "silabus", "dosen", 
+                "mata kuliah", "sks", "kurikulum", "silabus", "dosen",
                 "jurusan", "fakultas", "semester", "ujian", "nilai",
                 "skripsi", "thesis", "akademik", "pendidikan"
             ],
@@ -38,8 +36,7 @@ class SearchService(SearchServiceInterface):
             ],
             SearchStrategy.FACILITY: [
                 "gedung", "ruang", "laboratorium", "perpustakaan", "kantin",
-                "parkir", "fasilitas", "lokasi", "alamat", "kampus",
-                "lab", "auditorium", "aula"
+                "parkir", "fasilitas", "lokasi", "alamat", "kampus",                "lab", "auditorium", "aula"
             ]
         }
 
@@ -47,17 +44,13 @@ class SearchService(SearchServiceInterface):
         """
         Perform intelligent search with automatic or specified strategy.
         """
-        # Auto-detect strategy if not provided
         strategy = query.strategy
         if strategy is None:
             strategy = self._detect_search_strategy(query.text)
             
         logger.info(f"Using search strategy: {strategy.value}")
         
-        # Perform search via API client
         response = await self.client.search(query.text)
-        
-        # Add strategy info to response
         response.search_type = strategy.value
         
         return response
@@ -98,8 +91,7 @@ class SearchService(SearchServiceInterface):
             ]
         else:
             suggestions = [
-                "Informasi umum tentang Universitas Gunadarma",
-                "Kontak dan alamat kampus",
+                "Informasi umum tentang Universitas Gunadarma",                "Kontak dan alamat kampus",
                 "Program studi yang tersedia"
             ]
             
@@ -126,25 +118,23 @@ class SearchService(SearchServiceInterface):
         """Detect the best search strategy based on question content."""
         question_lower = question.lower()
         
-        # Count keyword matches for each strategy
         strategy_scores = {}
         for strategy, keywords in self._strategy_keywords.items():
             score = sum(1 for keyword in keywords if keyword in question_lower)
             if score > 0:
                 strategy_scores[strategy] = score
         
-        # Return strategy with highest score, or GENERAL as default
         if strategy_scores:
             return max(strategy_scores.keys(), key=lambda k: strategy_scores[k])
         
-        return SearchStrategy.SMART  # Default to smart strategy
+        return SearchStrategy.SMART
 
 
 class ChatbotService:
     """Service for handling chatbot operations."""    
     def __init__(self, search_service: SearchServiceInterface):
         self.search_service = search_service
-        self.hybrid_available = True  # Set based on availability
+        self.hybrid_available = True
     
     async def process_message(
         self, 
@@ -154,10 +144,8 @@ class ChatbotService:
     ) -> str:
         """Process user message and return formatted response."""
         try:
-            # Use strategy from search_options if available
             if search_options and 'strategy' in search_options:
                 strategy_str = search_options['strategy']
-                # Convert string to SearchStrategy enum if needed
                 if isinstance(strategy_str, str):
                     try:
                         strategy = SearchStrategy(strategy_str)
@@ -171,7 +159,6 @@ class ChatbotService:
             if response.error:
                 return f"❌ **Error:** {response.error_message}"
             
-            # Format response with options
             formatted_response = self._format_response(response, search_options)
             return formatted_response
             
@@ -183,26 +170,21 @@ class ChatbotService:
         """Format search response for display."""
         answer = response.answer
         
-        # Check if we should show sources
         show_sources = True
         if search_options:
             show_sources = search_options.get('show_sources', True)
         
-        # Check if detailed response is requested
         detailed_response = False
         if search_options:
             detailed_response = search_options.get('detailed_response', False)
         
         if detailed_response and hasattr(response, 'metadata'):
-            # Add detailed information if available
             if response.metadata:
                 answer += f"\n\n**🔍 Detail Pencarian:**\n"
-                if 'search_type' in response.metadata:
-                    answer += f"- Mode: {response.metadata['search_type']}\n"
+                if 'search_type' in response.metadata:                    answer += f"- Mode: {response.metadata['search_type']}\n"
                 if 'confidence_score' in response.metadata:
                     answer += f"- Skor Kepercayaan: {response.metadata['confidence_score']:.2f}\n"
         
-        # Add sources if requested and available
         if show_sources and response.source_urls:
             sources_section = "\n\n**📚 Sumber:**\n"
             for i, url in enumerate(response.source_urls[:3], 1):

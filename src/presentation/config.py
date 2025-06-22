@@ -10,7 +10,6 @@ from ..domain import StarterQuestion
 class StarterQuestionsConfig:
     """Configuration for starter questions displayed in the chatbot interface."""
     
-    # Categories for organizing starter questions
     REGISTRATION = "registration"
     ACADEMIC = "academic"
     ADMINISTRATION = "administration"
@@ -21,7 +20,6 @@ class StarterQuestionsConfig:
         """Get all starter questions."""
         questions = []
         
-        # Registration questions
         registration_questions = [
             StarterQuestion("Prosedur pendaftaran mahasiswa baru", "/public/write.svg", "registration"),
             StarterQuestion("Rincian biaya kuliah", "/public/write.svg", "registration"),

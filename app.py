@@ -16,11 +16,7 @@ from chainlit.input_widget import Select, Switch
 from src import app
 from src.domain.enums import SearchStrategy
 
-
-# Load environment variables at startup
 load_dotenv()
-
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -33,7 +29,6 @@ async def setup_chat_profile():
         chat_profile_config = app.get_chat_profile_config()
         profile_data = chat_profile_config.create_chat_profile(app.is_hybrid_available())
         
-        # Convert starter data to chainlit Starter objects
         starters = []
         for starter_data in profile_data['starters']:
             starter = cl.Starter(
@@ -53,7 +48,6 @@ async def setup_chat_profile():
         return [profile]
     except Exception as e:
         logger.error(f"Error setting up chat profile: {e}")
-        # Return minimal profile on error
         return [
             cl.ChatProfile(
                 name="Chatbot UG",
@@ -70,12 +64,10 @@ async def handle_user_message(message: cl.Message):
     try:
         chat_controller = app.get_chat_controller()
         
-        # Get current search settings from user session
         search_mode = cl.user_session.get("search_mode", SearchStrategy.HYBRID.value if app.is_hybrid_available() else SearchStrategy.SEMANTIC.value)
         show_sources = cl.user_session.get("show_sources", True)
         detailed_response = cl.user_session.get("detailed_response", False)
         
-        # Map search mode to display name
         mode_names = {
             SearchStrategy.HYBRID.value: "Hybrid Search",
             SearchStrategy.SEMANTIC.value: "Semantic Search", 
@@ -114,11 +106,9 @@ async def handle_user_message(message: cl.Message):
                 step.is_error = True
                 step.output = response_text
         
-        await cl.Message(content=response_text, author="Assistant").send()
-        
+        await cl.Message(content=response_text, author="Assistant").send()        
     except Exception as e:
         logger.error(f"Critical error in message handling: {e}")
-        # Send error message to user
         error_message = f"❌ **System Error:** Terjadi kesalahan sistem yang tidak terduga. Silakan coba lagi atau hubungi administrator."
         await cl.Message(content=error_message, author="Assistant").send()
 
@@ -128,10 +118,8 @@ async def on_chat_start():
     """Initialize chat session and setup search mode settings."""
     logger.info("New chat session started")
     
-    # Setup search mode settings
     await setup_search_settings()
     
-    # Send welcome message if needed
     if not app.is_hybrid_available():
         warning_message = """
 ⚠️ **Peringatan:** Sistem sedang berjalan dalam mode kompatibilitas. 
@@ -144,7 +132,6 @@ Silakan lanjutkan dengan mengetikkan pertanyaan Anda.
 
 async def setup_search_settings():
     """Setup search mode settings for the chat."""
-    # Available search strategies based on the domain enum
     search_options = []
     search_values = []
     
@@ -199,15 +186,13 @@ async def setup_search_settings():
                 description="Tampilkan sumber referensi dalam jawaban"
             ),
             Switch(
-                id="detailed_response",
-                label="📝 Jawaban Detail", 
+                id="detailed_response",                label="📝 Jawaban Detail", 
                 initial=False,
                 description="Berikan jawaban yang lebih detail dan komprehensif"
             )
         ]
     ).send()
     
-    # Store initial settings in user session
     cl.user_session.set("search_mode", search_values[initial_index])
     cl.user_session.set("show_sources", True)
     cl.user_session.set("detailed_response", False)
@@ -216,14 +201,11 @@ async def setup_search_settings():
 @cl.on_settings_update
 async def on_settings_update(settings):
     """Handle search settings updates."""
-    logger.info(f"Settings updated: {settings}")
-    
-    # Update user session with new settings
+    logger.info(f"Settings updated: {settings}")    
     cl.user_session.set("search_mode", settings.get("search_mode", SearchStrategy.HYBRID.value))
     cl.user_session.set("show_sources", settings.get("show_sources", True))
     cl.user_session.set("detailed_response", settings.get("detailed_response", False))
     
-    # Log the changes for debugging (no chat message sent)
     search_mode = settings.get("search_mode", SearchStrategy.HYBRID.value)
     mode_names = {
         SearchStrategy.HYBRID.value: "Hybrid Search",
@@ -234,12 +216,10 @@ async def on_settings_update(settings):
         SearchStrategy.ADMINISTRATIVE.value: "Administrative Search", 
         SearchStrategy.FACILITY.value: "Facility Search",
         SearchStrategy.QUICK.value: "Quick Search"
-    }
-    
+    }    
     mode_name = mode_names.get(search_mode, search_mode)
     show_sources = "enabled" if settings.get("show_sources", True) else "disabled"
     detailed = "enabled" if settings.get("detailed_response", False) else "disabled"
-    
     logger.info(f"Search mode updated to: {mode_name}, Show sources: {show_sources}, Detailed response: {detailed}")
 
 
@@ -250,7 +230,6 @@ async def on_chat_end():
 
 
 if __name__ == "__main__":
-    # This allows the app to be run directly, but usually chainlit handles execution
     print("🚀 Gunadarma RAG Chatbot - Clean Architecture")
     print("📁 Struktur: Domain → Application → Infrastructure → Presentation")
     print("🔧 Untuk menjalankan: chainlit run app.py -w")
