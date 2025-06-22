@@ -102,11 +102,10 @@ class StarterQuestionsConfig:
             
             # Convert to chainlit Starter format
             for starter in sampled_starters:
-                # Gunakan label pendek tapi kirim pertanyaan lengkap
                 full_question = full_questions.get(starter.content, starter.content)
                 cl_starter = {
-                    'label': starter.content,  # Label pendek tanpa "..."
-                    'message': full_question,  # Pertanyaan lengkap
+                    'label': starter.content,
+                    'message': full_question,
                     'icon': starter.icon,
                 }
                 selected.append(cl_starter)
@@ -124,19 +123,11 @@ class ChatProfileConfig:
         grouped_starters = StarterQuestionsConfig.group_starters_by_icon(all_starters)
         selected_starters = StarterQuestionsConfig.select_random_starters_per_category(grouped_starters)
         
-        if hybrid_available:
-            description = """
-## &emsp;**Chatbot Universitas Gunadarma**&emsp;
+        description = """
+## **Chatbot Universitas Gunadarma**
 
-&emsp;Siap membantu seputar info akademik Universitas Gunadarma&emsp;
+Siap membantu seputar informasi akademik Universitas Gunadarma
 """
-        else:
-            description = """
-## &emsp; **Chatbot Universitas Gunadarma** &emsp;
-
-&emsp; Siap membantu seputar info akademik Universitas Gunadarma dengan API standar. &emsp;
-"""
-        
         return {
             'name': "Chatbot UG",
             'description': description,

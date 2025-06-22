@@ -27,10 +27,11 @@ class ChatUseCase:
     async def process_user_message(
         self, 
         message: str, 
-        strategy: Optional[SearchStrategy] = None
+        strategy: Optional[SearchStrategy] = None,
+        search_options: Optional[Dict[str, Any]] = None
     ) -> str:
         """Process user message through chatbot service."""
-        return await self.chatbot_service.process_message(message, strategy)
+        return await self.chatbot_service.process_message(message, strategy, search_options)
 
 
 class HealthCheckUseCase:

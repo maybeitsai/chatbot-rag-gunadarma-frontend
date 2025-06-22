@@ -1,4 +1,4 @@
-## Tentang Chatbot UG
+## Chatbot UG
 
 Selamat datang di Asisten Virtual Akademik Universitas Gunadarma! Chatbot ini dirancang untuk menjadi teman cerdas Anda dalam menavigasi informasi seputar kehidupan kampus. Chatbot ini dikembangkan oleh [Harry Mardika](https://github.com/maybeitsai) untuk Penelitian Ilmiah.
 

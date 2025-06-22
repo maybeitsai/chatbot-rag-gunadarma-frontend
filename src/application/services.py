@@ -141,8 +141,7 @@ class SearchService(SearchServiceInterface):
 
 
 class ChatbotService:
-    """Service for handling chatbot operations."""
-    
+    """Service for handling chatbot operations."""    
     def __init__(self, search_service: SearchServiceInterface):
         self.search_service = search_service
         self.hybrid_available = True  # Set based on availability
@@ -150,29 +149,61 @@ class ChatbotService:
     async def process_message(
         self, 
         message: str, 
-        strategy: Optional[SearchStrategy] = None
+        strategy: Optional[SearchStrategy] = None,
+        search_options: Optional[Dict[str, Any]] = None
     ) -> str:
         """Process user message and return formatted response."""
         try:
+            # Use strategy from search_options if available
+            if search_options and 'strategy' in search_options:
+                strategy_str = search_options['strategy']
+                # Convert string to SearchStrategy enum if needed
+                if isinstance(strategy_str, str):
+                    try:
+                        strategy = SearchStrategy(strategy_str)
+                    except ValueError:
+                        logger.warning(f"Unknown strategy: {strategy_str}, using default")
+                        strategy = None
+            
             query = SearchQuery(text=message, strategy=strategy)
             response = await self.search_service.search(query)
             
             if response.error:
                 return f"❌ **Error:** {response.error_message}"
             
-            # Format response
-            formatted_response = self._format_response(response)
+            # Format response with options
+            formatted_response = self._format_response(response, search_options)
             return formatted_response
             
         except Exception as e:
             logger.error(f"Error processing message: {e}")
             return f"❌ **Error:** Terjadi kesalahan saat memproses pertanyaan Anda: {str(e)}"
     
-    def _format_response(self, response: SearchResponse) -> str:
+    def _format_response(self, response: SearchResponse, search_options: Optional[Dict[str, Any]] = None) -> str:
         """Format search response for display."""
         answer = response.answer
         
-        if response.source_urls:
+        # Check if we should show sources
+        show_sources = True
+        if search_options:
+            show_sources = search_options.get('show_sources', True)
+        
+        # Check if detailed response is requested
+        detailed_response = False
+        if search_options:
+            detailed_response = search_options.get('detailed_response', False)
+        
+        if detailed_response and hasattr(response, 'metadata'):
+            # Add detailed information if available
+            if response.metadata:
+                answer += f"\n\n**🔍 Detail Pencarian:**\n"
+                if 'search_type' in response.metadata:
+                    answer += f"- Mode: {response.metadata['search_type']}\n"
+                if 'confidence_score' in response.metadata:
+                    answer += f"- Skor Kepercayaan: {response.metadata['confidence_score']:.2f}\n"
+        
+        # Add sources if requested and available
+        if show_sources and response.source_urls:
             sources_section = "\n\n**📚 Sumber:**\n"
             for i, url in enumerate(response.source_urls[:3], 1):
                 sources_section += f"{i}. {url}\n"
