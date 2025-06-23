@@ -118,6 +118,25 @@ class RAGApiClient(ApiClientInterface):
             error_message=error_message
         )
 
+    def _apply_response_rules(self, answer: str, source_urls: List[str]) -> tuple[str, List[str]]:
+        """
+        Apply response handling rules as specified:
+        1. If response is empty or only spaces, return standard message without sources
+        2. If response is already the standard message, return as-is without sources
+        3. For other responses, return as-is with sources
+        """
+        # Check if answer is empty or only whitespace
+        if not answer or answer.strip() == "":
+            return "Maaf, informasi mengenai hal tersebut tidak tersedia dalam data kami.", []
+        
+        # Check if answer is already the standard "not available" message
+        standard_message = "Maaf, informasi mengenai hal tersebut tidak tersedia dalam data kami."
+        if answer.strip() == standard_message:
+            return standard_message, []
+        
+        # For all other responses, return as-is with sources
+        return answer, source_urls
+
     def _create_success_response(self, query: SearchQuery, data: Dict[str, Any]) -> SearchResponse:
         """Create success response from API data."""
         # Extract results
@@ -132,17 +151,24 @@ class RAGApiClient(ApiClientInterface):
             )
             results.append(result)
 
+        # Handle response according to specified rules
+        answer = data.get("answer", "")
+        source_urls = data.get("source_urls", [])
+        
+        # Apply response handling rules
+        processed_answer, processed_sources = self._apply_response_rules(answer, source_urls)
+
         response = SearchResponse(
             query=query,
-            answer=data.get("answer", ""),
+            answer=processed_answer,
             results=results,
             status=ResponseStatus.SUCCESS,
-            source_urls=data.get("source_urls", []),
+            source_urls=processed_sources,
             response_time=data.get("response_time", 0.0),
             cached=data.get("cached", False),
             cache_type=data.get("cache_type"),
             search_type=data.get("search_type"),
-            source_count=len(data.get("source_urls", []))
+            source_count=len(processed_sources)
         )
 
         return response

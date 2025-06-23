@@ -1,6 +1,6 @@
-## Chatbot UG
+## Chatbot Universitas Gunadarma
 
-Selamat datang di Asisten Virtual Akademik Universitas Gunadarma! Chatbot ini dirancang untuk menjadi teman cerdas Anda dalam menavigasi informasi seputar kehidupan kampus. Chatbot ini dikembangkan oleh [Harry Mardika](https://github.com/maybeitsai) untuk Penelitian Ilmiah.
+Selamat datang di Asisten Virtual Akademik Universitas Gunadarma! Chatbot ini dirancang untuk menjadi teman cerdas Anda dalam menavigasi informasi seputar kehidupan kampus. Chatbot ini dikembangkan oleh [Harry Mardika](https://github.com/maybeitsai) sebagai Penelitian Ilmiah.
 
 ### 🎯 Tujuan Kami
 
@@ -22,7 +22,7 @@ Selamat datang di Asisten Virtual Akademik Universitas Gunadarma! Chatbot ini di
 
 ### ⚠️ Disclaimer
 
-- Informasi yang diberikan oleh chatbot ini didasarkan pada data yang tersedia hingga **Juni 2025**.
+- Data yang digunakan selalu diperbarui setiap Bulan.
 - Chatbot ini masih dalam tahap pengembangan aktif. Meskipun kami berusaha memberikan jawaban yang akurat, ada kemungkinan terjadi kesalahan atau informasi yang kurang lengkap.
 - Untuk informasi yang bersifat krusial dan penting, **selalu lakukan verifikasi ulang** dengan merujuk ke situs web resmi Gunadarma atau menghubungi bagian administrasi terkait.
 

@@ -16,7 +16,8 @@ class SearchService(SearchServiceInterface):
     """
     High-level search service with intelligent search strategy selection.
     
-    This service provides different search strategies optimized for various    types of queries and use cases.
+    This service provides different search strategies optimized for various
+    types of queries and use cases.
     """
     
     def __init__(self, api_config: Optional[ApiConfig] = None):
@@ -36,7 +37,8 @@ class SearchService(SearchServiceInterface):
             ],
             SearchStrategy.FACILITY: [
                 "gedung", "ruang", "laboratorium", "perpustakaan", "kantin",
-                "parkir", "fasilitas", "lokasi", "alamat", "kampus",                "lab", "auditorium", "aula"
+                "parkir", "fasilitas", "lokasi", "alamat", "kampus",
+                "lab", "auditorium", "aula"
             ]
         }
 
@@ -91,7 +93,8 @@ class SearchService(SearchServiceInterface):
             ]
         else:
             suggestions = [
-                "Informasi umum tentang Universitas Gunadarma",                "Kontak dan alamat kampus",
+                "Informasi umum tentang Universitas Gunadarma",
+                "Kontak dan alamat kampus",
                 "Program studi yang tersedia"
             ]
             
@@ -131,7 +134,8 @@ class SearchService(SearchServiceInterface):
 
 
 class ChatbotService:
-    """Service for handling chatbot operations."""    
+    """Service for handling chatbot operations."""
+    
     def __init__(self, search_service: SearchServiceInterface):
         self.search_service = search_service
         self.hybrid_available = True
@@ -178,14 +182,20 @@ class ChatbotService:
         if search_options:
             detailed_response = search_options.get('detailed_response', False)
         
+        # Apply response formatting rules:
+        # Only show sources if the answer is not the standard "not available" message
+        standard_message = "Maaf, informasi mengenai hal tersebut tidak tersedia dalam data kami."
+        
         if detailed_response and hasattr(response, 'metadata'):
             if response.metadata:
                 answer += f"\n\n**🔍 Detail Pencarian:**\n"
-                if 'search_type' in response.metadata:                    answer += f"- Mode: {response.metadata['search_type']}\n"
+                if 'search_type' in response.metadata:
+                    answer += f"- Mode: {response.metadata['search_type']}\n"
                 if 'confidence_score' in response.metadata:
                     answer += f"- Skor Kepercayaan: {response.metadata['confidence_score']:.2f}\n"
         
-        if show_sources and response.source_urls:
+        # Only add sources if it's not the standard "not available" message
+        if show_sources and response.source_urls and answer.strip() != standard_message:
             sources_section = "\n\n**📚 Sumber:**\n"
             for i, url in enumerate(response.source_urls[:3], 1):
                 sources_section += f"{i}. {url}\n"

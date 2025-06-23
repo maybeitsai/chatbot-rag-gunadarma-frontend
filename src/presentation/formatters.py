@@ -6,7 +6,8 @@ from ..domain import SearchResponse
 
 
 class ResponseFormatter(FormatterInterface):
-    """Formatter for search responses and UI elements."""    
+    """Formatter for search responses and UI elements."""
+    
     def __init__(self, show_debug_info: bool = False):
         self.show_debug_info = show_debug_info
     
@@ -17,7 +18,10 @@ class ResponseFormatter(FormatterInterface):
         
         formatted_text = response.answer
         
-        if response.source_urls:
+        # Apply response formatting rules:
+        # Only show sources if the answer is not the standard "not available" message
+        standard_message = "Maaf, informasi mengenai hal tersebut tidak tersedia dalam data kami."
+        if response.answer.strip() != standard_message and response.source_urls:
             sources_section = self._format_sources(response.source_urls)
             formatted_text += sources_section
         

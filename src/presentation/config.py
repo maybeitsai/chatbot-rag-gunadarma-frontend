@@ -124,7 +124,7 @@ class ChatProfileConfig:
         description = """
 ## **Chatbot Universitas Gunadarma**
 
-Siap membantu seputar informasi akademik Universitas Gunadarma
+Siap membantu pertanyaan seputar informasi dari Universitas Gunadarma
 """
         return {
             'name': "Chatbot UG",
