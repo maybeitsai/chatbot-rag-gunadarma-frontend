@@ -143,7 +143,7 @@ button[data-state="unchecked"] span {
 
 /* Step indicator colors */
 .step-indicator,
-.MuiStepIcon-root.MuiStepIcon-active {
+.MuiStepIcon-root.Mui-checked {
   color: var(--gunadarma-primary) !important;
 }
 
@@ -446,4 +446,59 @@ button[class*="inline-flex"],
 button[class*="rounded-md"],
 button[class*="transition-colors"] {
   --ring-color: var(--gunadarma-primary) !important;
+}
+
+/* =================================== */
+/* CUSTOM COPYRIGHT WATERMARK STYLING */
+/* =================================== */
+
+/* Styling untuk copyright watermark Harry Mardika */
+.watermark {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  cursor: default !important;
+  padding: 8px 12px !important;
+  margin-top: 8px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.watermark:hover {
+  background-color: rgba(104, 67, 154, 0.08) !important;
+  border-color: rgba(104, 67, 154, 0.2) !important;
+  transform: none !important;
+}
+
+/* Styling khusus untuk teks copyright */
+.watermark .text-xs {
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.025em !important;
+}
+
+/* Dark mode support untuk copyright */
+@media (prefers-color-scheme: dark) {
+  .watermark {
+    background-color: rgba(104, 67, 154, 0.1) !important;
+    border-color: rgba(104, 67, 154, 0.2) !important;
+  }
+
+  .watermark:hover {
+    background-color: rgba(104, 67, 154, 0.15) !important;
+    border-color: rgba(104, 67, 154, 0.3) !important;
+  }
+}
+
+/* Responsive design untuk copyright */
+@media (max-width: 640px) {
+  .watermark {
+    padding: 6px 10px !important;
+    margin-top: 6px !important;
+  }
+
+  .watermark .text-xs {
+    font-size: 10px !important;
+  }
 }
