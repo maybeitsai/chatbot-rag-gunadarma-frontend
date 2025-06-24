@@ -13,7 +13,8 @@ class SearchQuery:
     max_results: int = 10
     
     def __post_init__(self):
-        if not self.text.strip():
+        # Robust validation for text input
+        if not self.text or not isinstance(self.text, str) or not self.text.strip():
             raise ValueError("Search query text cannot be empty")
 
 

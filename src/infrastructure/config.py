@@ -17,7 +17,7 @@ class ApiConfig:
     @classmethod
     def from_env(cls) -> 'ApiConfig':
         """Create ApiConfig from environment variables."""
-        base_url = os.getenv("FASTAPI_BACKEND_URL", "http://localhost:8000")
+        base_url = os.getenv("BACKEND_URL", "http://localhost:8000")
         return cls(base_url=base_url)
 
 
@@ -25,7 +25,7 @@ class ApiConfig:
 class SearchConfig:
     """Configuration for search operations."""
     max_results: int = 10
-    cache_ttl: int = 300  # 5 minutes
+    cache_ttl: int = 300
     enable_caching: bool = True
     default_strategy: str = "smart"
 

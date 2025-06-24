@@ -148,6 +148,25 @@ class ChatbotService:
     ) -> str:
         """Process user message and return formatted response."""
         try:
+            # Enhanced input validation with detailed logging
+            logger.info(f"Processing message: '{message}' (type: {type(message)}, length: {len(message) if message else 0})")
+            
+            # Validate and sanitize input
+            if not message or not isinstance(message, str):
+                logger.warning(f"Invalid message type or None: {type(message)}")
+                return "❌ **Error:** Pesan tidak valid. Silakan masukkan pertanyaan Anda."
+            
+            # Strip whitespace and validate again
+            message = message.strip()
+            if not message:
+                logger.warning("Empty message after stripping whitespace")
+                return "❌ **Error:** Pesan tidak boleh kosong. Silakan masukkan pertanyaan Anda."
+            
+            # Validate minimum message length
+            if len(message) < 2:
+                logger.warning(f"Message too short: '{message}'")
+                return "❌ **Error:** Pertanyaan terlalu pendek. Silakan masukkan pertanyaan yang lebih jelas."
+            
             if search_options and 'strategy' in search_options:
                 strategy_str = search_options['strategy']
                 if isinstance(strategy_str, str):
@@ -157,7 +176,10 @@ class ChatbotService:
                         logger.warning(f"Unknown strategy: {strategy_str}, using default")
                         strategy = None
             
+            # Create query with validated message
             query = SearchQuery(text=message, strategy=strategy)
+            logger.info(f"Created search query successfully for: '{message[:50]}...'")
+            
             response = await self.search_service.search(query)
             
             if response.error:
@@ -166,6 +188,10 @@ class ChatbotService:
             formatted_response = self._format_response(response, search_options)
             return formatted_response
             
+        except ValueError as e:
+            # This catches the "Search query text cannot be empty" error
+            logger.error(f"ValueError in message processing: {e}")
+            return f"❌ **Error:** Terjadi kesalahan validasi: {str(e)}"
         except Exception as e:
             logger.error(f"Error processing message: {e}")
             return f"❌ **Error:** Terjadi kesalahan saat memproses pertanyaan Anda: {str(e)}"

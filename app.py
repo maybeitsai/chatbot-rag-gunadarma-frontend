@@ -62,6 +62,16 @@ async def setup_chat_profile():
 async def handle_user_message(message: cl.Message):
     """Handle incoming user messages through the chat controller."""
     try:
+        # Add detailed logging for debugging Docker issues
+        logger.info(f"Received message: '{message.content}' (type: {type(message.content)}, length: {len(message.content) if message.content else 0})")
+        
+        # Validate message content early
+        if not message.content or not isinstance(message.content, str) or not message.content.strip():
+            logger.warning(f"Invalid message content received: {repr(message.content)}")
+            error_message = "❌ **Error:** Pesan tidak boleh kosong. Silakan masukkan pertanyaan Anda."
+            await cl.Message(content=error_message, author="Assistant").send()
+            return
+        
         chat_controller = app.get_chat_controller()
         
         search_mode = cl.user_session.get("search_mode", SearchStrategy.HYBRID.value if app.is_hybrid_available() else SearchStrategy.SEMANTIC.value)
