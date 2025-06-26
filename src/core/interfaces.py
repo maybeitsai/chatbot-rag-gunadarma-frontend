@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional, Protocol
-from ..domain import SearchQuery, SearchResponse, StarterQuestion
+from ..domain import SearchQuery, SearchResponse, StarterQuestion, BatchRequest, BatchResponse
 
 
 class SearchServiceInterface(ABC):
@@ -11,6 +11,11 @@ class SearchServiceInterface(ABC):
     @abstractmethod
     async def search(self, query: SearchQuery) -> SearchResponse:
         """Perform a search operation."""
+        pass
+    
+    @abstractmethod
+    async def batch_search(self, batch_request: BatchRequest) -> BatchResponse:
+        """Perform batch search operations."""
         pass
     
     @abstractmethod
@@ -30,6 +35,11 @@ class ApiClientInterface(ABC):
     @abstractmethod
     async def search(self, query: str) -> SearchResponse:
         """Perform search via API."""
+        pass
+    
+    @abstractmethod
+    async def batch_search(self, batch_request: BatchRequest) -> BatchResponse:
+        """Perform batch search via API."""
         pass
     
     @abstractmethod

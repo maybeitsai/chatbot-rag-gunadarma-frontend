@@ -5,8 +5,8 @@ import logging
 from typing import Optional
 
 from .infrastructure import ApiConfig, RAGApiClient, SimpleCache
-from .application import SearchService, ChatbotService, SearchUseCase, ChatUseCase, HealthCheckUseCase
-from .presentation import ChatController, ResponseFormatter, ChatProfileConfig
+from .application import SearchService, ChatbotService, SearchUseCase, ChatUseCase, HealthCheckUseCase, BatchSearchUseCase
+from .presentation import ChatController, BatchController, ResponseFormatter, ChatProfileConfig
 from .domain import SearchStrategy
 from .core import ChatbotException
 
@@ -36,6 +36,7 @@ class Application:
             self.chatbot_service = ChatbotService(self.search_service)
             
             self.search_use_case = SearchUseCase(self.search_service)
+            self.batch_search_use_case = BatchSearchUseCase(self.search_service)
             self.chat_use_case = ChatUseCase(self.chatbot_service)
             self.health_check_use_case = HealthCheckUseCase(self.search_service)
             
@@ -47,8 +48,14 @@ class Application:
                 self.formatter
             )
             
+            self.batch_controller = BatchController(
+                self.chat_use_case,
+                self.batch_search_use_case,
+                self.formatter
+            )
+            
             self.hybrid_available = True
-            logger.info("✅ Application initialized successfully with hybrid search")
+            logger.info("✅ Application initialized successfully with hybrid search and batch processing")
             
         except ImportError as e:
             logger.warning(f"⚠️ Hybrid search not available: {e}")
@@ -69,6 +76,10 @@ class Application:
     def get_chat_controller(self) -> ChatController:
         """Get the chat controller."""
         return self.chat_controller
+    
+    def get_batch_controller(self) -> BatchController:
+        """Get the batch controller."""
+        return self.batch_controller
     
     def get_chat_profile_config(self) -> 'ChatProfileConfig':
         """Get chat profile configuration."""

@@ -1,8 +1,8 @@
 """Domain layer - Business entities and value objects."""
 
 from .entities import SearchResponse, ChatProfile
-from .value_objects import SearchQuery, SearchResult, StarterQuestion
-from .enums import SearchStrategy, SearchType, MessageType, ResponseStatus
+from .value_objects import SearchQuery, SearchResult, StarterQuestion, BatchRequest, BatchResult, BatchResponse
+from .enums import SearchStrategy, MessageType, ResponseStatus
 
 __all__ = [
     'SearchQuery',
@@ -10,8 +10,10 @@ __all__ = [
     'SearchResult',
     'ChatProfile',
     'StarterQuestion',
+    'BatchRequest',
+    'BatchResult', 
+    'BatchResponse',
     'SearchStrategy',
-    'SearchType',
     'MessageType',
     'ResponseStatus'
 ]

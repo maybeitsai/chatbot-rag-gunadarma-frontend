@@ -2,10 +2,9 @@
 
 import logging
 from typing import Dict, Any, Optional, List
-from enum import Enum
 
 from ..core import SearchServiceInterface
-from ..domain import SearchQuery, SearchResponse, SearchStrategy
+from ..domain import SearchQuery, SearchResponse, SearchStrategy, BatchRequest, BatchResponse
 from ..infrastructure import RAGApiClient, ApiConfig
 
 
@@ -14,123 +13,85 @@ logger = logging.getLogger(__name__)
 
 class SearchService(SearchServiceInterface):
     """
-    High-level search service with intelligent search strategy selection.
-    
-    This service provides different search strategies optimized for various
-    types of queries and use cases.
+    Simplified search service using Hybrid Search only.
     """
     
     def __init__(self, api_config: Optional[ApiConfig] = None):
         """Initialize search service with API client."""
         self.client = RAGApiClient(api_config)
-        
-        self._strategy_keywords = {
-            SearchStrategy.ACADEMIC: [
-                "mata kuliah", "sks", "kurikulum", "silabus", "dosen",
-                "jurusan", "fakultas", "semester", "ujian", "nilai",
-                "skripsi", "thesis", "akademik", "pendidikan"
-            ],
-            SearchStrategy.ADMINISTRATIVE: [
-                "pendaftaran", "administrasi", "pembayaran", "spp", "uang kuliah",
-                "dokumen", "berkas", "persyaratan", "prosedur", "formulir",
-                "registrasi", "kartu mahasiswa", "transkrip"
-            ],
-            SearchStrategy.FACILITY: [
-                "gedung", "ruang", "laboratorium", "perpustakaan", "kantin",
-                "parkir", "fasilitas", "lokasi", "alamat", "kampus",
-                "lab", "auditorium", "aula"
-            ]
-        }
 
     async def search(self, query: SearchQuery) -> SearchResponse:
         """
-        Perform intelligent search with automatic or specified strategy.
+        Perform search with hybrid strategy by default.
         """
-        strategy = query.strategy
-        if strategy is None:
-            strategy = self._detect_search_strategy(query.text)
-            
+        # Always use hybrid search
+        strategy = SearchStrategy.HYBRID
         logger.info(f"Using search strategy: {strategy.value}")
         
-        response = await self.client.search(query.text)
+        # Always use hybrid search
+        use_hybrid = True
+        
+        response = await self.client.search(query.text, use_hybrid)
         response.search_type = strategy.value
         
         return response
 
+    async def batch_search(self, batch_request: BatchRequest) -> BatchResponse:
+        """
+        Perform batch search operations.
+        """
+        logger.info(f"Processing batch request with {len(batch_request.questions)} questions")
+        
+        try:
+            response = await self.client.batch_search(batch_request)
+            logger.info(f"Batch search completed in {response.processing_time:.2f}s")
+            return response
+        
+        except Exception as e:
+            logger.error(f"Error in batch search: {e}")
+            # Create error response for all questions
+            error_results = []
+            for question in batch_request.questions:
+                from ..domain.value_objects import BatchResult
+                error_result = BatchResult(
+                    answer=f"Error: {str(e)}",
+                    source_urls=[],
+                    status="error",
+                    source_count=0,
+                    response_time=0.0,
+                    cached=False,
+                    cache_type=None,
+                    search_type=None
+                )
+                error_results.append(error_result)
+            
+            return BatchResponse(
+                results=error_results,
+                total_questions=len(batch_request.questions),
+                processing_time=0.0
+            )
+
     async def health_check(self) -> Dict[str, Any]:
-        """Check service health."""
+        """Check service health - always reports hybrid search available."""
         api_healthy = self.client.health_check()
         
         return {
             "service_status": "healthy" if api_healthy else "unhealthy",
             "backend_status": "available" if api_healthy else "unavailable",
-            "available_strategies": [s.value for s in SearchStrategy],
-            "available_presets": ["balanced", "fast", "comprehensive"]
+            "available_strategies": ["hybrid"]
         }
 
     async def get_search_suggestions(self, text: str) -> List[str]:
-        """Get search suggestions based on input text."""
-        strategy = self._detect_search_strategy(text)
-        
-        suggestions = []
-        if strategy == SearchStrategy.ACADEMIC:
-            suggestions = [
-                "Bagaimana cara melihat jadwal kuliah?",
-                "Berapa SKS minimal per semester?",
-                "Siapa dosen pengampu mata kuliah X?"
-            ]
-        elif strategy == SearchStrategy.ADMINISTRATIVE:
-            suggestions = [
-                "Bagaimana cara mendaftar ulang?",
-                "Berapa biaya SPP semester ini?",
-                "Dokumen apa saja yang diperlukan untuk pendaftaran?"
-            ]
-        elif strategy == SearchStrategy.FACILITY:
-            suggestions = [
-                "Di mana lokasi perpustakaan pusat?",
-                "Jam operasional laboratorium komputer?",
-                "Fasilitas apa saja yang tersedia di kampus?"
-            ]
-        else:
-            suggestions = [
-                "Informasi umum tentang Universitas Gunadarma",
-                "Kontak dan alamat kampus",
-                "Program studi yang tersedia"
-            ]
-            
-        return suggestions
-
-    async def multi_strategy_search(self, question: str) -> Dict[str, SearchResponse]:
-        """Perform search with multiple strategies for comparison."""
-        strategies = [
-            SearchStrategy.ACADEMIC,
-            SearchStrategy.ADMINISTRATIVE, 
-            SearchStrategy.FACILITY,
-            SearchStrategy.QUICK
+        """Get simple search suggestions."""
+        # Return basic suggestions for University Gunadarma
+        suggestions = [
+            "Bagaimana cara mendaftar kuliah di Universitas Gunadarma?",
+            "Program studi apa saja yang tersedia?",
+            "Berapa biaya kuliah per semester?",
+            "Dimana alamat kampus Universitas Gunadarma?",
+            "Fasilitas apa saja yang tersedia di kampus?"
         ]
-        
-        results = {}
-        for strategy in strategies:
-            query = SearchQuery(text=question, strategy=strategy)
-            response = await self.search(query)
-            results[strategy.value] = response
-            
-        return results
-
-    def _detect_search_strategy(self, question: str) -> SearchStrategy:
-        """Detect the best search strategy based on question content."""
-        question_lower = question.lower()
-        
-        strategy_scores = {}
-        for strategy, keywords in self._strategy_keywords.items():
-            score = sum(1 for keyword in keywords if keyword in question_lower)
-            if score > 0:
-                strategy_scores[strategy] = score
-        
-        if strategy_scores:
-            return max(strategy_scores.keys(), key=lambda k: strategy_scores[k])
-        
-        return SearchStrategy.SMART
+        return suggestions
 
 
 class ChatbotService:
@@ -167,16 +128,10 @@ class ChatbotService:
                 logger.warning(f"Message too short: '{message}'")
                 return "❌ **Error:** Pertanyaan terlalu pendek. Silakan masukkan pertanyaan yang lebih jelas."
             
-            if search_options and 'strategy' in search_options:
-                strategy_str = search_options['strategy']
-                if isinstance(strategy_str, str):
-                    try:
-                        strategy = SearchStrategy(strategy_str)
-                    except ValueError:
-                        logger.warning(f"Unknown strategy: {strategy_str}, using default")
-                        strategy = None
+            # Always use hybrid search
+            strategy = SearchStrategy.HYBRID
             
-            # Create query with validated message
+            # Create query with validated message and hybrid strategy
             query = SearchQuery(text=message, strategy=strategy)
             logger.info(f"Created search query successfully for: '{message[:50]}...'")
             
@@ -185,7 +140,8 @@ class ChatbotService:
             if response.error:
                 return f"❌ **Error:** {response.error_message}"
             
-            formatted_response = self._format_response(response, search_options)
+            # Always show sources
+            formatted_response = self._format_response(response, {'show_sources': True})
             return formatted_response
             
         except ValueError as e:
@@ -195,33 +151,56 @@ class ChatbotService:
         except Exception as e:
             logger.error(f"Error processing message: {e}")
             return f"❌ **Error:** Terjadi kesalahan saat memproses pertanyaan Anda: {str(e)}"
+
+    async def process_batch_messages(self, batch_request: BatchRequest) -> BatchResponse:
+        """Process batch messages and return batch response."""
+        try:
+            logger.info(f"Processing batch request with {len(batch_request.questions)} questions")
+            
+            # Validate batch request
+            if not batch_request.questions:
+                raise ValueError("Batch request must contain at least one question")
+            
+            # Process through search service
+            batch_response = await self.search_service.batch_search(batch_request)
+            
+            logger.info(f"Batch processing completed in {batch_response.processing_time:.2f}s")
+            return batch_response
+            
+        except Exception as e:
+            logger.error(f"Error processing batch messages: {e}")
+            # Create error response for all questions
+            error_results = []
+            for question in batch_request.questions:
+                from ..domain.value_objects import BatchResult
+                error_result = BatchResult(
+                    answer=f"Error: {str(e)}",
+                    source_urls=[],
+                    status="error",
+                    source_count=0,
+                    response_time=0.0,
+                    cached=False,
+                    cache_type=None,
+                    search_type=None
+                )
+                error_results.append(error_result)
+            
+            return BatchResponse(
+                results=error_results,
+                total_questions=len(batch_request.questions),
+                processing_time=0.0
+            )
     
     def _format_response(self, response: SearchResponse, search_options: Optional[Dict[str, Any]] = None) -> str:
-        """Format search response for display."""
+        """Format search response for display - always show sources."""
         answer = response.answer
-        
-        show_sources = True
-        if search_options:
-            show_sources = search_options.get('show_sources', True)
-        
-        detailed_response = False
-        if search_options:
-            detailed_response = search_options.get('detailed_response', False)
         
         # Apply response formatting rules:
         # Only show sources if the answer is not the standard "not available" message
         standard_message = "Maaf, informasi mengenai hal tersebut tidak tersedia dalam data kami."
         
-        if detailed_response and hasattr(response, 'metadata'):
-            if response.metadata:
-                answer += f"\n\n**🔍 Detail Pencarian:**\n"
-                if 'search_type' in response.metadata:
-                    answer += f"- Mode: {response.metadata['search_type']}\n"
-                if 'confidence_score' in response.metadata:
-                    answer += f"- Skor Kepercayaan: {response.metadata['confidence_score']:.2f}\n"
-        
-        # Only add sources if it's not the standard "not available" message
-        if show_sources and response.source_urls and answer.strip() != standard_message:
+        # Always add sources if available and it's not the standard "not available" message
+        if response.source_urls and answer.strip() != standard_message:
             sources_section = "\n\n**📚 Sumber:**\n"
             for i, url in enumerate(response.source_urls[:3], 1):
                 sources_section += f"{i}. {url}\n"

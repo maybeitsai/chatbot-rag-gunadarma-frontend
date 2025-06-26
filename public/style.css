@@ -73,19 +73,6 @@ button[data-state="unchecked"] span {
   background-color: var(--gunadarma-primary) !important;
 }
 
-/* Specific switch controls - unchecked state */
-#detailed_response:not(.Mui-checked) .MuiSwitch-thumb,
-#show_sources:not(.Mui-checked) .MuiSwitch-thumb {
-  background-color: #ffffff !important;
-  border: 1px solid #cccccc !important;
-}
-
-#detailed_response:not(.Mui-checked) .MuiSwitch-track,
-#show_sources:not(.Mui-checked) .MuiSwitch-track {
-  background-color: #cccccc !important;
-  opacity: 0.6 !important;
-}
-
 /* HANYA TOMBOL SEND PESAN - ID: chat-submit */
 
 /* Tombol send enabled */
@@ -104,37 +91,6 @@ button[data-state="unchecked"] span {
 /* Tombol send disabled */
 #chat-submit[disabled],
 #chat-submit.Mui-disabled {
-  background-color: var(--gunadarma-primary) !important;
-  color: white !important;
-  border-color: var(--gunadarma-primary) !important;
-  opacity: 0.5 !important;
-}
-
-/* TOMBOL SEARCH OPTIONS - ID: detailed_response, confirm, show_sources */
-
-/* Tombol search options enabled */
-#detailed_response:not([disabled]),
-#confirm:not([disabled]),
-#show_sources:not([disabled]) {
-  background-color: var(--gunadarma-primary) !important;
-  color: white !important;
-  border-color: var(--gunadarma-primary) !important;
-}
-
-/* Tombol search options hover */
-#detailed_response:not([disabled]):hover,
-#confirm:not([disabled]):hover,
-#show_sources:not([disabled]):hover {
-  background-color: var(--gunadarma-primary-hover) !important;
-  border-color: var(--gunadarma-primary-hover) !important;
-}
-
-/* Tombol search options disabled */
-#detailed_response[disabled],
-#show_sources[disabled],
-#detailed_response.Mui-disabled,
-#confirm.Mui-disabled,
-#show_sources.Mui-disabled {
   background-color: var(--gunadarma-primary) !important;
   color: white !important;
   border-color: var(--gunadarma-primary) !important;
@@ -222,27 +178,6 @@ button[data-state="unchecked"] span {
 
 .message-content a:hover {
   color: var(--gunadarma-primary-hover) !important;
-}
-
-/* Fix focus ring untuk dropdown button search_mode */
-button[id="search_mode"]:focus,
-button[role="combobox"]:focus {
-  outline: none !important;
-  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
-  border-color: var(--gunadarma-primary) !important;
-}
-
-/* Custom focus ring menggunakan box-shadow */
-button[id="search_mode"]:focus-visible,
-button[role="combobox"]:focus-visible {
-  outline: none !important;
-  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
-  border-color: var(--gunadarma-primary) !important;
-}
-
-/* Override default focus ring colors dengan CSS variables */
-button[id="search_mode"] {
-  --ring-color: var(--gunadarma-primary) !important;
 }
 
 /* Untuk semua element dengan focus ring, gunakan warna tema */
@@ -446,6 +381,113 @@ button[class*="inline-flex"],
 button[class*="rounded-md"],
 button[class*="transition-colors"] {
   --ring-color: var(--gunadarma-primary) !important;
+}
+
+/* =================================== */
+/* CUSTOM COPYRIGHT WATERMARK STYLING */
+/* =================================== */
+
+/* Styling untuk copyright watermark Harry Mardika */
+.watermark {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  cursor: default !important;
+  padding: 8px 12px !important;
+  margin-top: 8px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.watermark:hover {
+  background-color: rgba(104, 67, 154, 0.08) !important;
+  border-color: rgba(104, 67, 154, 0.2) !important;
+  transform: none !important;
+}
+
+/* Styling khusus untuk teks copyright */
+.watermark .text-xs {
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.025em !important;
+}
+
+/* Dark mode support untuk copyright */
+@media (prefers-color-scheme: dark) {
+  .watermark {
+    background-color: rgba(104, 67, 154, 0.1) !important;
+    border-color: rgba(104, 67, 154, 0.2) !important;
+  }
+
+  .watermark:hover {
+    background-color: rgba(104, 67, 154, 0.15) !important;
+    border-color: rgba(104, 67, 154, 0.3) !important;
+  }
+}
+
+/* Responsive design untuk copyright */
+@media (max-width: 640px) {
+  .watermark {
+    padding: 6px 10px !important;
+    margin-top: 6px !important;
+  }
+
+  .watermark .text-xs {
+    font-size: 10px !important;
+  }
+}
+
+/* =================================== */
+/* TOMBOL CONFIRM STYLING */
+/* =================================== */
+
+/* Styling untuk tombol dengan ID confirm - mengganti warna pink dengan tema Gunadarma */
+#confirm {
+  background-color: var(--gunadarma-primary) !important;
+  color: white !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Hover state untuk tombol confirm */
+#confirm:hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+  border-color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Focus state untuk tombol confirm */
+#confirm:focus,
+#confirm:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--gunadarma-primary) !important;
+  border-color: var(--gunadarma-primary) !important;
+}
+
+/* Disabled state untuk tombol confirm */
+#confirm:disabled,
+#confirm.disabled {
+  background-color: var(--gunadarma-primary) !important;
+  color: white !important;
+  border-color: var(--gunadarma-primary) !important;
+  opacity: 0.5 !important;
+}
+
+/* Override untuk class bg-primary pada tombol confirm */
+#confirm.bg-primary {
+  background-color: var(--gunadarma-primary) !important;
+}
+
+#confirm.bg-primary:hover {
+  background-color: var(--gunadarma-primary-hover) !important;
+}
+
+/* Override untuk class hover:bg-primary/90 */
+#confirm[class*="hover:bg-primary"] {
+  background-color: var(--gunadarma-primary) !important;
+}
+
+#confirm[class*="hover:bg-primary"]:hover {
+  background-color: var(--gunadarma-primary-hover) !important;
 }
 
 /* =================================== */

@@ -34,3 +34,38 @@ class StarterQuestion:
     content: str
     icon: str
     category: str
+
+
+@dataclass(frozen=True)
+class BatchRequest:
+    """Value object representing a batch request."""
+    questions: List[str]
+    use_cache: bool = True
+    use_hybrid: bool = True
+    
+    def __post_init__(self):
+        if not self.questions or not isinstance(self.questions, list):
+            raise ValueError("Questions list cannot be empty")
+        if not all(isinstance(q, str) and q.strip() for q in self.questions):
+            raise ValueError("All questions must be non-empty strings")
+
+
+@dataclass(frozen=True)
+class BatchResult:
+    """Value object representing a single result in batch response."""
+    answer: str
+    source_urls: List[str]
+    status: str
+    source_count: int
+    response_time: float
+    cached: bool
+    cache_type: Optional[str]
+    search_type: Optional[str]
+
+
+@dataclass(frozen=True)
+class BatchResponse:
+    """Value object representing a batch response."""
+    results: List[BatchResult]
+    total_questions: int
+    processing_time: float

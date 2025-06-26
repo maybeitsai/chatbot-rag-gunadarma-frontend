@@ -11,7 +11,6 @@ from typing import Optional
 
 import chainlit as cl
 from dotenv import load_dotenv
-from chainlit.input_widget import Select, Switch
 
 from src import app
 from src.domain.enums import SearchStrategy
@@ -19,7 +18,6 @@ from src.domain.enums import SearchStrategy
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 
 @cl.set_chat_profiles
@@ -74,41 +72,27 @@ async def handle_user_message(message: cl.Message):
         
         chat_controller = app.get_chat_controller()
         
-        search_mode = cl.user_session.get("search_mode", SearchStrategy.HYBRID.value if app.is_hybrid_available() else SearchStrategy.SEMANTIC.value)
-        show_sources = cl.user_session.get("show_sources", True)
-        detailed_response = cl.user_session.get("detailed_response", False)
+        # Always use hybrid search and show sources
+        search_mode = SearchStrategy.HYBRID.value
+        show_sources = True
         
-        mode_names = {
-            SearchStrategy.HYBRID.value: "Hybrid Search",
-            SearchStrategy.SEMANTIC.value: "Semantic Search", 
-            SearchStrategy.KEYWORD.value: "Keyword Search",
-            SearchStrategy.SMART.value: "Smart Search",
-            SearchStrategy.ACADEMIC.value: "Academic Search",
-            SearchStrategy.ADMINISTRATIVE.value: "Administrative Search", 
-            SearchStrategy.FACILITY.value: "Facility Search",
-            SearchStrategy.QUICK.value: "Quick Search"
-        }
-        
-        step_name = mode_names.get(search_mode, search_mode)
-        
-        async with cl.Step(name=step_name, type="run") as step:
+        async with cl.Step(name="Hybrid Search", type="run") as step:
             step.input = message.content
             
             try:
-                # Process message through controller with selected search mode
+                # Process message through controller with hybrid search and sources enabled
                 response_text = await chat_controller.process_message(
                     message.content, 
                     search_strategy=search_mode,
-                    show_sources=show_sources,
-                    detailed_response=detailed_response
+                    show_sources=show_sources
                 )
                 
                 # Check if response indicates an error
                 if "❌" in response_text or "Error" in response_text:
                     step.is_error = True
-                    step.output = f"Terjadi kesalahan dalam pencarian dengan {step_name}"
+                    step.output = "Terjadi kesalahan dalam pencarian"
                 else:
-                    step.output = f"Pencarian berhasil dengan {step_name}"
+                    step.output = "Pencarian berhasil dengan Hybrid Search"
                     
             except Exception as e:
                 logger.error(f"Error in message handling: {e}")
@@ -125,112 +109,17 @@ async def handle_user_message(message: cl.Message):
 
 @cl.on_chat_start
 async def on_chat_start():
-    """Initialize chat session and setup search mode settings."""
-    logger.info("New chat session started")
-    
-    await setup_search_settings()
+    """Initialize chat session."""
+    logger.info("New chat session started - Using Hybrid Search with sources enabled by default")
     
     if not app.is_hybrid_available():
         warning_message = """
 ⚠️ **Peringatan:** Sistem sedang berjalan dalam mode kompatibilitas. 
-Beberapa fitur mungkin tidak tersedia.
+Hybrid Search tidak tersedia saat ini.
 
 Silakan lanjutkan dengan mengetikkan pertanyaan Anda.
         """
         await cl.Message(content=warning_message, author="System").send()
-
-
-async def setup_search_settings():
-    """Setup search mode settings for the chat."""
-    search_options = []
-    search_values = []
-    
-    if app.is_hybrid_available():
-        search_options = [
-            "Hybrid Search",
-            "Semantic Search", 
-            "Keyword Search",
-            "Smart Search",
-            "Academic Search", 
-            "Administrative Search",
-            "Facility Search",
-            "Quick Search"
-        ]
-        search_values = [
-            SearchStrategy.HYBRID.value,
-            SearchStrategy.SEMANTIC.value,
-            SearchStrategy.KEYWORD.value, 
-            SearchStrategy.SMART.value,
-            SearchStrategy.ACADEMIC.value,
-            SearchStrategy.ADMINISTRATIVE.value,
-            SearchStrategy.FACILITY.value,
-            SearchStrategy.QUICK.value
-        ]
-        initial_index = 0  # Default to Hybrid
-    else:
-        search_options = [
-            "Semantic Search",
-            "Keyword Search", 
-            "Quick Search"
-        ]
-        search_values = [
-            SearchStrategy.SEMANTIC.value,
-            SearchStrategy.KEYWORD.value,
-            SearchStrategy.QUICK.value
-        ]
-        initial_index = 0  # Default to Semantic
-    
-    settings = await cl.ChatSettings(
-        [
-            Select(
-                id="search_mode",
-                label="🔍 Mode Pencarian",
-                values=search_options,
-                initial_index=initial_index,
-                description="Pilih mode pencarian yang sesuai dengan kebutuhan Anda"
-            ),
-            Switch(
-                id="show_sources", 
-                label="📚 Tampilkan Sumber",
-                initial=True,
-                description="Tampilkan sumber referensi dalam jawaban"
-            ),
-            Switch(
-                id="detailed_response",                label="📝 Jawaban Detail", 
-                initial=False,
-                description="Berikan jawaban yang lebih detail dan komprehensif"
-            )
-        ]
-    ).send()
-    
-    cl.user_session.set("search_mode", search_values[initial_index])
-    cl.user_session.set("show_sources", True)
-    cl.user_session.set("detailed_response", False)
-
-
-@cl.on_settings_update
-async def on_settings_update(settings):
-    """Handle search settings updates."""
-    logger.info(f"Settings updated: {settings}")    
-    cl.user_session.set("search_mode", settings.get("search_mode", SearchStrategy.HYBRID.value))
-    cl.user_session.set("show_sources", settings.get("show_sources", True))
-    cl.user_session.set("detailed_response", settings.get("detailed_response", False))
-    
-    search_mode = settings.get("search_mode", SearchStrategy.HYBRID.value)
-    mode_names = {
-        SearchStrategy.HYBRID.value: "Hybrid Search",
-        SearchStrategy.SEMANTIC.value: "Semantic Search", 
-        SearchStrategy.KEYWORD.value: "Keyword Search",
-        SearchStrategy.SMART.value: "Smart Search",
-        SearchStrategy.ACADEMIC.value: "Academic Search",
-        SearchStrategy.ADMINISTRATIVE.value: "Administrative Search", 
-        SearchStrategy.FACILITY.value: "Facility Search",
-        SearchStrategy.QUICK.value: "Quick Search"
-    }    
-    mode_name = mode_names.get(search_mode, search_mode)
-    show_sources = "enabled" if settings.get("show_sources", True) else "disabled"
-    detailed = "enabled" if settings.get("detailed_response", False) else "disabled"
-    logger.info(f"Search mode updated to: {mode_name}, Show sources: {show_sources}, Detailed response: {detailed}")
 
 
 @cl.on_chat_end
@@ -243,4 +132,4 @@ if __name__ == "__main__":
     print("🚀 Gunadarma RAG Chatbot - Clean Architecture")
     print("📁 Struktur: Domain → Application → Infrastructure → Presentation")
     print("🔧 Untuk menjalankan: chainlit run app.py -w")
-    print("🌐 Mode:", "Hybrid Search" if app.is_hybrid_available() else "Legacy API")
+    print("🌐 Mode:", "Hybrid Search" if app.is_hybrid_available() else "Compatibility Mode")

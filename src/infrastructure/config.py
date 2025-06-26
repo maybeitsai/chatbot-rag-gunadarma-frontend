@@ -27,7 +27,7 @@ class SearchConfig:
     max_results: int = 10
     cache_ttl: int = 300
     enable_caching: bool = True
-    default_strategy: str = "smart"
+    default_strategy: str = "hybrid"
 
     @classmethod
     def from_env(cls) -> 'SearchConfig':
@@ -36,5 +36,5 @@ class SearchConfig:
             max_results=int(os.getenv("SEARCH_MAX_RESULTS", "10")),
             cache_ttl=int(os.getenv("CACHE_TTL", "300")),
             enable_caching=os.getenv("ENABLE_CACHING", "true").lower() == "true",
-            default_strategy=os.getenv("DEFAULT_SEARCH_STRATEGY", "smart")
+            default_strategy=os.getenv("DEFAULT_SEARCH_STRATEGY", "hybrid")
         )
