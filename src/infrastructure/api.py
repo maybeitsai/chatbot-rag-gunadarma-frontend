@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional, List
 import asyncio
 import time
 import httpx
+from urllib.parse import urlparse
 
 from ..core import ApiClientInterface, ApiException
 from ..domain import SearchResponse, SearchQuery, SearchResult, ResponseStatus, BatchRequest, BatchResponse, BatchResult
@@ -192,11 +193,15 @@ class RAGApiClient(ApiClientInterface):
         results = []
         
         for result_data in data.get("results", []):
+            # Normalize URLs for batch results too
+            raw_urls = result_data.get("source_urls", [])
+            normalized_urls = self._normalize_and_deduplicate_urls(raw_urls)
+            
             batch_result = BatchResult(
                 answer=result_data.get("answer", ""),
-                source_urls=result_data.get("source_urls", []),
+                source_urls=normalized_urls,
                 status=result_data.get("status", "success"),
-                source_count=result_data.get("source_count", 0),
+                source_count=result_data.get("source_count", len(normalized_urls)),
                 response_time=result_data.get("response_time", 0.0),
                 cached=result_data.get("cached", False),
                 cache_type=result_data.get("cache_type"),
@@ -238,7 +243,7 @@ class RAGApiClient(ApiClientInterface):
         Apply response handling rules as specified:
         1. If response is empty or only spaces, return standard message without sources
         2. If response is already the standard message, return as-is without sources
-        3. For other responses, return as-is with sources
+        3. For other responses, return as-is with sources (normalized and deduplicated)
         """
         # Check if answer is empty or only whitespace
         if not answer or answer.strip() == "":
@@ -249,8 +254,9 @@ class RAGApiClient(ApiClientInterface):
         if answer.strip() == standard_message:
             return standard_message, []
         
-        # For all other responses, return as-is with sources
-        return answer, source_urls
+        # For all other responses, normalize and deduplicate URLs
+        normalized_urls = self._normalize_and_deduplicate_urls(source_urls)
+        return answer, normalized_urls
 
     def _create_success_response(self, query: SearchQuery, data: Dict[str, Any]) -> SearchResponse:
         """Create success response from API data using backend response format."""
@@ -287,3 +293,94 @@ class RAGApiClient(ApiClientInterface):
         )
 
         return response
+
+    def _normalize_url(self, url: str) -> str:
+        """Normalize URL by removing www and trailing slash."""
+        if not url or not isinstance(url, str):
+            return url
+            
+        # Clean up the URL first
+        url = url.strip()
+        
+        try:
+            # Add scheme if missing
+            if not url.startswith(('http://', 'https://')):
+                if url.startswith('www.'):
+                    url = 'https://' + url
+                elif '.' in url:
+                    url = 'https://' + url
+                else:
+                    return url  # Return as-is if it doesn't look like a URL
+            
+            # Parse the URL
+            parsed = urlparse(url)
+            
+            # Get hostname and remove www
+            hostname = parsed.hostname
+            if not hostname:
+                return url  # Return original if hostname is invalid
+                
+            if hostname.startswith('www.'):
+                hostname = hostname[4:]
+            
+            # Build normalized URL
+            normalized_url = f"{parsed.scheme}://{hostname}"
+            
+            # Add port if it exists and is not default
+            if parsed.port and parsed.port not in [80, 443]:
+                normalized_url += f":{parsed.port}"
+            
+            # Add path if it exists and is not just '/'
+            if parsed.path and parsed.path != '/':
+                # Remove trailing slash from path
+                path = parsed.path.rstrip('/')
+                if path:  # Only add if path is not empty after stripping
+                    normalized_url += path
+            
+            # Add query and fragment if they exist
+            if parsed.query:
+                normalized_url += f"?{parsed.query}"
+            if parsed.fragment:
+                normalized_url += f"#{parsed.fragment}"
+                
+            return normalized_url
+            
+        except Exception:
+            # If URL parsing fails, return original URL with basic cleanup
+            clean_url = url
+            
+            # Remove www
+            if 'www.' in clean_url:
+                clean_url = clean_url.replace('://www.', '://').replace('www.', '')
+            
+            # Handle trailing slash carefully
+            if clean_url.endswith('/') and '?' not in clean_url and '#' not in clean_url:
+                # Only remove trailing slash if there are no query params or fragments
+                # and if it's not just the root path
+                if clean_url.count('/') > 2:  # More than just protocol://domain/
+                    clean_url = clean_url.rstrip('/')
+            
+            return clean_url
+
+    def _normalize_and_deduplicate_urls(self, urls: List[str]) -> List[str]:
+        """Normalize and remove duplicate URLs."""
+        if not urls:
+            return []
+            
+        seen = set()
+        unique_urls = []
+        
+        for url in urls:
+            if not url or not isinstance(url, str):
+                continue
+                
+            normalized = self._normalize_url(url)
+            
+            # Convert to lowercase for comparison to catch case differences
+            normalized_lower = normalized.lower()
+            
+            if normalized_lower not in seen:
+                seen.add(normalized_lower)
+                unique_urls.append(normalized)  # Keep original case for display
+        
+        return unique_urls

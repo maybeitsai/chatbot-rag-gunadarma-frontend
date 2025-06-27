@@ -1,7 +1,6 @@
 """Presentation formatters - Response formatting for UI."""
 
 from typing import Dict, Any, List
-from urllib.parse import urlparse
 from ..core import FormatterInterface
 from ..domain import SearchResponse
 
@@ -65,71 +64,19 @@ class ResponseFormatter(FormatterInterface):
         
         return formatted_text
     
-    def _normalize_url(self, url: str) -> str:
-        """Normalize URL by removing www and trailing slash."""
-        try:
-            # Parse the URL
-            parsed = urlparse(url)
-            
-            # Remove www from hostname
-            hostname = parsed.hostname
-            if hostname and hostname.startswith('www.'):
-                hostname = hostname[4:]
-            
-            # Rebuild the URL without trailing slash
-            normalized_url = f"{parsed.scheme}://{hostname}"
-            
-            # Add port if it exists and is not default
-            if parsed.port and parsed.port not in [80, 443]:
-                normalized_url += f":{parsed.port}"
-            
-            # Add path if it exists and is not just '/'
-            if parsed.path and parsed.path != '/':
-                # Remove trailing slash from path
-                path = parsed.path.rstrip('/')
-                normalized_url += path
-            
-            # Add query and fragment if they exist
-            if parsed.query:
-                normalized_url += f"?{parsed.query}"
-            if parsed.fragment:
-                normalized_url += f"#{parsed.fragment}"
-                
-            return normalized_url
-        except Exception:
-            # If URL parsing fails, return original URL with basic cleanup
-            clean_url = url.replace('www.', '').rstrip('/')
-            # Handle case where URL might end with query parameters
-            if '?' in clean_url:
-                parts = clean_url.split('?')
-                parts[0] = parts[0].rstrip('/')
-                clean_url = '?'.join(parts)
-            return clean_url
-    
-    def _deduplicate_urls(self, urls: List[str]) -> List[str]:
-        """Remove duplicate URLs after normalization."""
-        seen = set()
-        unique_urls = []
-        
-        for url in urls:
-            normalized = self._normalize_url(url)
-            if normalized not in seen:
-                seen.add(normalized)
-                unique_urls.append(normalized)
-        
-        return unique_urls
-
     def _format_sources(self, source_urls: List[str]) -> str:
         """Format source URLs for display."""
-        # Deduplicate and normalize URLs
-        unique_urls = self._deduplicate_urls(source_urls)
+        if not source_urls:
+            return ""
         
+        # URLs are already normalized and deduplicated at API level
+        # Just format them for display
         sources_section = "\n\n**📚 Sumber:**\n"
-        for i, url in enumerate(unique_urls[:3], 1):
+        for i, url in enumerate(source_urls[:3], 1):
             sources_section += f"{i}. {url}\n"
         
-        if len(unique_urls) > 3:
-            sources_section += f"... dan {len(unique_urls) - 3} sumber lainnya\n"
+        if len(source_urls) > 3:
+            sources_section += f"... dan {len(source_urls) - 3} sumber lainnya\n"
         
         return sources_section
     
@@ -142,9 +89,3 @@ class ResponseFormatter(FormatterInterface):
         debug_info += f"- Source Count: {response.source_count}\n"
         
         return debug_info
-
-
-def format_response_sources(source_urls: List[str]) -> str:
-    """Utility function to format response sources."""
-    formatter = ResponseFormatter()
-    return formatter._format_sources(source_urls)
