@@ -25,17 +25,6 @@ RUN . .venv/bin/activate && uv sync --no-cache
 # Copy application code
 COPY . .
 
-# Set environment variables for Docker
-ENV BACKEND_URL=http://host.docker.internal:8000
-ENV CHAINLIT_HOST=0.0.0.0
-ENV CHAINLIT_PORT=8080
-ENV SEARCH_MAX_RESULTS=10
-ENV CACHE_TTL=300
-ENV ENABLE_CACHING=true
-ENV DEFAULT_SEARCH_STRATEGY=hybrid
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
-
 # Expose port 8080
 EXPOSE 8080
 
