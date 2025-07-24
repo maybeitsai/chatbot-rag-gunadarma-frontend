@@ -76,7 +76,7 @@ async def handle_user_message(message: cl.Message):
         search_mode = SearchStrategy.HYBRID.value
         show_sources = True
         
-        async with cl.Step(name="Hybrid Search", type="run") as step:
+        async with cl.Step(name="RAG System", type="run") as step:
             step.input = message.content
             
             try:
